@@ -1,0 +1,181 @@
+// import React from 'react';
+// import { AppBar, Toolbar, Typography, Box, Chip, Button } from '@mui/material';
+// import { Wallet } from 'lucide-react';
+
+// const Header = ({ isWalletConnected, walletAddress, connectWallet, disconnectWallet }) => {
+//   return (
+//     <AppBar
+//       position="static"
+//       sx={{
+//         bgcolor: 'transparent',
+//         boxShadow: 'none',
+//         borderBottom: '1px solid #1E293B'
+//       }}
+//     >
+//       <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
+//         {/* Logo */}
+//         <Box display="flex" alignItems="center" gap={1}>
+//           <Box sx={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+//             ❄
+//           </Box>
+//           <Typography variant="h6" sx={{ fontWeight: 600 }}>SNOW</Typography>
+//         </Box>
+
+//         {/* Network + Wallet */}
+//         <Box display="flex" gap={2} alignItems="center">
+//           <Chip
+//             label="Sepolia"
+//             sx={{
+//               bgcolor: 'transparent',
+//               borderColor: '#7DC4FF',
+//               color: '#7DC4FF'
+//             }}
+//             variant="outlined"
+//           />
+//           {isWalletConnected ? (
+//             <Button
+//               variant="outlined"
+//               sx={{
+//                 borderColor: 'rgba(125, 196, 255, 0.5)',
+//                 color: '#E2E8F0',
+//                 textTransform: 'none'
+//               }}
+//               onClick={disconnectWallet}
+//             >
+//               {walletAddress}
+//             </Button>
+//           ) : (
+//             <Button
+//               variant="contained"
+//               sx={{
+//                 bgcolor: '#7DC4FF',
+//                 color: '#0B1523',
+//                 fontWeight: 600,
+//                 '&:hover': { bgcolor: '#6cb4e5' },
+//                 textTransform: 'none'
+//               }}
+//               onClick={connectWallet}
+//               startIcon={<Wallet size={18} />}
+//             >
+//               Connect Wallet
+//             </Button>
+//           )}
+//         </Box>
+//       </Toolbar>
+//     </AppBar>
+//   );
+// };
+
+// export default Header;
+import React from 'react';
+import { AppBar, Toolbar, Typography, Box, Chip, Button, useMediaQuery, useTheme } from '@mui/material';
+import { Wallet } from 'lucide-react';
+
+const Header = ({ isWalletConnected, walletAddress, connectWallet, disconnectWallet }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm')); // < 640px
+  const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'lg')); // 640-1024px
+  const isDesktop = useMediaQuery(theme.breakpoints.up('lg')); // > 1024px
+
+  // Shorten address differently based on screen size
+  const formatAddress = (address) => {
+    if (!address) return '';
+    if (isMobile) return `${address.slice(0, 3)}...${address.slice(-3)}`;
+    if (isTablet) return `${address.slice(0, 6)}...${address.slice(-4)}`;
+    return address;
+  };
+
+  return (
+    <AppBar
+      position="static"
+      sx={{
+        bgcolor: 'transparent',
+        boxShadow: 'none',
+        borderBottom: '1px solid #1E293B',
+        px: isMobile ? 1 : 2 // Adjust horizontal padding
+      }}
+    >
+      <Toolbar 
+        sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between',
+          minHeight: isMobile ? 56 : 64 // Adjust toolbar height
+        }}
+        disableGutters
+      >
+        {/* Logo - Always visible */}
+        <Box display="flex" alignItems="center" gap={1}>
+          <Box sx={{ 
+            width: isMobile ? 28 : 32, 
+            height: isMobile ? 28 : 32,
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center' 
+          }}>
+            ❄
+          </Box>
+          <Typography 
+            variant={isMobile ? 'subtitle1' : 'h6'} 
+            sx={{ fontWeight: 600 }}
+          >
+            SNOW
+          </Typography>
+        </Box>
+
+        {/* Network + Wallet - Responsive adjustments */}
+        <Box display="flex" gap={isMobile ? 1 : 2} alignItems="center">
+          {!isMobile && ( // Hide network chip on mobile
+            <Chip
+              label="Sepolia"
+              size={isMobile ? 'small' : 'medium'}
+              sx={{
+                bgcolor: 'transparent',
+                borderColor: '#7DC4FF',
+                color: '#7DC4FF',
+                fontSize: isMobile ? '0.7rem' : '0.8125rem'
+              }}
+              variant="outlined"
+            />
+          )}
+
+          {isWalletConnected ? (
+            <Button
+              variant="outlined"
+              size={isMobile ? 'small' : 'medium'}
+              sx={{
+                borderColor: 'rgba(125, 196, 255, 0.5)',
+                color: '#E2E8F0',
+                textTransform: 'none',
+                fontSize: isMobile ? '0.7rem' : '0.875rem',
+                px: isMobile ? 1 : 2
+              }}
+              onClick={disconnectWallet}
+            >
+              {formatAddress(walletAddress)}
+            </Button>
+          ) : (
+            <Button
+              variant="contained"
+              size={isMobile ? 'small' : 'medium'}
+              sx={{
+                bgcolor: '#7DC4FF',
+                color: '#0B1523',
+                fontWeight: 600,
+                '&:hover': { bgcolor: '#6cb4e5' },
+                textTransform: 'none',
+                fontSize: isMobile ? '0.7rem' : '0.875rem',
+                px: isMobile ? 1.5 : 2
+              }}
+              onClick={connectWallet}
+              startIcon={!isMobile && <Wallet size={isMobile ? 16 : 18} />} // Hide icon on mobile
+            >
+              {isMobile ? 'Connect' : 'Connect Wallet'}
+            </Button>
+          )}
+        </Box>
+      </Toolbar>
+    </AppBar>
+  );
+};
+
+export default Header;
