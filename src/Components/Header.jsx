@@ -14,7 +14,7 @@ const Header = ({ isWalletConnected, walletAddress, connectWallet, disconnectWal
     if (!address) return '';
     if (isMobile) return `${address.slice(0, 3)}...${address.slice(-3)}`;
     if (isTablet) return `${address.slice(0, 6)}...${address.slice(-4)}`;
-    return address;
+    return `${address.slice(0, 10)}...`;
   };
 
   return (

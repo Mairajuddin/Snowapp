@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Connect Wallet</title>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+
+  <body
+    class="bg-gray-100 flex items-center justify-center min-h-screen font-sans"
+  >
+    <div class="bg-white shadow-lg rounded-2xl p-8 max-w-sm w-full">
+      <h1 class="text-2xl font-bold text-center text-indigo-600 mb-4">
+        Connect Wallet
+      </h1>
+
+      <div class="flex flex-col space-y-4">
+        <button
+          onclick="connectWallet()"
+          class="bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition"
+        >
+          🔗 Connect Wallet
+        </button>
+
+        <button
+          onclick="disconnectWallet()"
+          class="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition"
+        >
+          ❌ Disconnect Wallet
+        </button>
+      </div>
+
+      <p id="status" class="text-center text-sm text-gray-600 mt-6"></p>
+    </div>
+
+    <script>
+      async function connectWallet() {
+        if (typeof window.ethereum === "undefined") {
+          alert("MetaMask not found. Please install it.");
+          return;
+        }
+
+        try {
+          const provider = new ethers.BrowserProvider(window.ethereum);
+          await provider.send("eth_requestAccounts", []);
+
+          let sessionSignature = localStorage.getItem("session_signature");
+          let address = "";
+
+          const signer = await provider.getSigner();
+          address = await signer.getAddress();
+
+          const message = `Log into Polymarket - ${new Date()
+            .toISOString()
+            .slice(0, 10)}`;
+          const signature = await signer.signMessage(message);
+
+          localStorage.setItem("session_signature", signature);
+          localStorage.setItem("wallet_address", address);
+
+          window.opener.postMessage({ type: "wallet_connected", address }, "*");
+          document.getElementById(
+            "status"
+          ).innerText = `✅ Connected: ${address}`;
+          setTimeout(() => window.close(), 1200);
+        } catch (err) {
+          alert("❌ Error: " + err.message);
+        }
+      }
+
+      async function disconnectWallet() {
+        const address = localStorage.getItem("wallet_address");
+
+        localStorage.removeItem("session_signature");
+        localStorage.removeItem("wallet_address");
+
+        document.getElementById("status").innerText = "🔌 Disconnected";
+
+        window.opener.postMessage({ type: "wallet_disconnected" }, "*");
+        setTimeout(() => window.close(), 1000);
+      }
+    </script>
+  </body>
+</html>
