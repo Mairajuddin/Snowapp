@@ -1,4 +1,3 @@
-// utils/walletUtils.js
 import { ethers } from 'ethers';
 
 export const connectWalletFunc = async () => {
@@ -14,7 +13,7 @@ export const connectWalletFunc = async () => {
     const signer = await provider.getSigner();
     const address = await signer.getAddress();
 
-    const message = `Log into Polymarket - ${new Date()
+    const message = `Log into CyclX - ${new Date()
       .toISOString()
       .slice(0, 10)}`;
     const signature = await signer.signMessage(message);
@@ -29,7 +28,7 @@ export const connectWalletFunc = async () => {
   }
 };
 
-export const disconnectWallet = () => {
+export const disconnectWalletFunc = () => {
   localStorage.removeItem('session_signature');
   localStorage.removeItem('wallet_address');
   return true;

@@ -6,7 +6,7 @@ import { RefreshCw } from 'lucide-react';
 import Header from '../Components/Header';
 import Footer from '../Components/Footer';
 import ToastContainer from '../Components/ToastContainer';
-import { connectWalletFunc } from '../utils/walletUtils';
+import { connectWalletFunc, disconnectWalletFunc } from '../utils/walletUtils';
 
 const MainPage = () => {
   const [currentPhase, setCurrentPhase] = useState('stake');
@@ -67,6 +67,7 @@ const MainPage = () => {
   const disconnectWallet = () => {
     setIsWalletConnected(false);
     setWalletAddress('');
+    disconnectWalletFunc()
     addToast('error', 'Wallet disconnected');
   };
 
