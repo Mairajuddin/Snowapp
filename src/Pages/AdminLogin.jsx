@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { User, Lock } from 'lucide-react';
+import { useNavigate } from 'react-router';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -11,6 +12,7 @@ export default function AdminLogin() {
     e.preventDefault();
     // Handle login logic here
     console.log('Login attempt:', { email, password, rememberMe });
+    navigate("/admin");
   };
 
   const styles = {
@@ -162,6 +164,8 @@ export default function AdminLogin() {
   const [focusedInput, setFocusedInput] = useState(null);
   const [hoveredForgotLink, setHoveredForgotLink] = useState(false);
   const [hoveredSignupLink, setHoveredSignupLink] = useState(false);
+
+  const navigate=useNavigate()
 
   return (
     <div style={styles.container}>
