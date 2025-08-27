@@ -7,6 +7,7 @@ import Header from '../Components/Header';
 import Footer from '../Components/Footer';
 import ToastContainer from '../Components/ToastContainer';
 import { connectWalletFunc, disconnectWalletFunc } from '../utils/walletUtils';
+import { FireApi } from '../hooks/useRequest';
 
 const MainPage = () => {
   const [currentPhase, setCurrentPhase] = useState('stake');
@@ -17,7 +18,7 @@ const MainPage = () => {
   const [snowBalance, setSnowBalance] = useState('1,234.56');
   const [previousBalance, setPreviousBalance] = useState('800.12');
   const [toasts, setToasts] = useState([]);
-  const [isApproved, setIsApproved] = useState(false);
+  // const [isApproved, setIsApproved] = useState(false);
 
   // Countdown logic
   useEffect(() => {
@@ -41,29 +42,24 @@ const MainPage = () => {
   };
   const removeToast = id => setToasts(prev => prev.filter(t => t.id !== id));
 
-  // const connectWallet = () => {
-  //   setIsWalletConnected(true);
-  //   connectWalletFunc()
-  //   setWalletAddress('0x1234...5678');
-  //   addToast('success', 'Wallet connected successfully');
-  // };
+
   const connectWallet = async () => {
-  try {
-    addToast('pending', 'Connecting wallet...');
-    const result = await connectWalletFunc();
-    
-    if (result && result.address) {
-      setIsWalletConnected(true);
-      setWalletAddress(result.address);
-      addToast('success', 'Wallet connected successfully');
-    } else {
+    try {
+      addToast('pending', 'Connecting wallet...');
+      const result = await connectWalletFunc();
+
+      if (result && result.address) {
+        setIsWalletConnected(true);
+        setWalletAddress(result.address);
+        addToast('success', 'Wallet connected successfully');
+      } else {
+        addToast('error', 'Failed to connect wallet');
+      }
+    } catch (error) {
+      console.error('Wallet connection error:', error);
       addToast('error', 'Failed to connect wallet');
     }
-  } catch (error) {
-    console.error('Wallet connection error:', error);
-    addToast('error', 'Failed to connect wallet');
-  }
-};
+  };
   const disconnectWallet = () => {
     setIsWalletConnected(false);
     setWalletAddress('');
@@ -71,20 +67,34 @@ const MainPage = () => {
     addToast('error', 'Wallet disconnected');
   };
 
-  const handleApprove = () => {
-    addToast('pending', 'Approving CYCLX tokens...');
-    setTimeout(() => {
-      setIsApproved(true);
-      addToast('success', 'CYCLX tokens approved');
-    }, 3000);
-  };
-  const handleStake = () => {
+  // const handleApprove = () => {
+  //   addToast('pending', 'Approving CYCLX tokens...');
+  //   setTimeout(() => {
+  //     setIsApproved(true);
+  //     addToast('success', 'CYCLX tokens approved');
+  //   }, 3000);
+  // };
+  const handleStake = async () => {
     if (!stakeAmount || parseFloat(stakeAmount) <= 0) return;
-    addToast('pending', 'Staking CYCLX tokens...');
-    setTimeout(() => {
-      addToast('success', `Successfully staked ${stakeAmount} CYCLX`);
-      setStakeAmount('');
-    }, 4000);
+    try {
+      const payload={
+       amount: stakeAmount,
+       
+      }
+      const response = await FireApi('stake-token', 'POST', payload);
+      if (response?.success || response?.Ok) {
+        console.log(response)
+      } else {
+        console.log(response)
+      }
+    } catch (error) {
+      console.log(error)
+    }
+    // addToast('pending', 'Staking CYCLX tokens...');
+    // setTimeout(() => {
+    //   addToast('success', `Successfully staked ${stakeAmount} CYCLX`);
+    //   setStakeAmount('');
+    // }, 4000);
   };
   const getNextPhaseName = () => {
     switch (currentPhase) {
@@ -185,18 +195,7 @@ const MainPage = () => {
         <Grid container spacing={4} >
           {/* Balances */}
           <Grid item xs={12} md={4} >
-            {/* <Card sx={{ bgcolor: '#111827', color: '#E2E8F0', borderRadius: '12px' }}>
-              <CardContent>
-                <Box display="flex" justifyContent="space-between" mb={1}>
-                  <Typography variant="body2" sx={{ color: '#94A3B8' }}>Your CYCLXv3 Balance</Typography>
-                  <IconButton sx={{ color: '#7DC4FF' }}>
-                    <RefreshCw size={16} />
-                  </IconButton>
-                </Box>
-                <Typography variant="h5" sx={{ fontWeight: 600 }}>{snowBalance}</Typography>
-                <Typography variant="body2" sx={{ color: '#94A3B8' }}>CYCLX</Typography>
-              </CardContent>
-            </Card> */}
+
             <Card sx={{ bgcolor: '#111827', color: '#E2E8F0', borderRadius: '12px' }}>
               <CardContent>
                 {/* Title & Refresh Button */}
@@ -251,8 +250,16 @@ const MainPage = () => {
                     sx={{ mb: 1 }}
                   />
                   <Typography variant="caption" sx={{ color: '#94A3B8' }}>≈ 0.0013 ETH gas</Typography>
-
-                  {!isApproved ? (
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    sx={{ mt: 2, bgcolor: '#00C48C', color: '#0B1523', fontWeight: 600, borderRadius: '6px', '&:hover': { bgcolor: '#00b37d' } }}
+                    disabled={!stakeAmount || parseFloat(stakeAmount) <= 0}
+                    onClick={handleStake}
+                  >
+                    Stake CYCLX
+                  </Button>
+                  {/* {!isApproved ? (
                     <Button
                       fullWidth
                       variant="contained"
@@ -271,7 +278,7 @@ const MainPage = () => {
                     >
                       Stake CYCLX
                     </Button>
-                  )}
+                  )} */}
                 </CardContent>
               </Card>
             )}

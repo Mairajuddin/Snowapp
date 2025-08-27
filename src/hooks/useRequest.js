@@ -1,7 +1,7 @@
 
 
-export const baseURL = "https://bcdf5da26bee.ngrok-free.app";
-export const imageURL = "https://bcdf5da26bee.ngrok-free.app/";
+export const baseURL = "http://192.168.18.33:5000";
+export const imageURL = "http://192.168.18.33:5000/";
 
 
 export const FireApi = async (endpoint, method, data = null, Headers = null) => {

@@ -17,7 +17,9 @@ export const connectWalletFunc = async () => {
     await provider.send('eth_requestAccounts', []);
 
     const signer = await provider.getSigner();
+    
     const address = await signer.getAddress();
+    localStorage.setItem('xsigner1234',JSON.stringify(signer))
 
     const message = `Log into CyclX - ${new Date()
       .toISOString()

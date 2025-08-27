@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, AppBar, Toolbar, Button, Card, CardContent, Grid, Paper, Chip, LinearProgress, Tooltip, CircularProgress } from '@mui/material';
+import { Box, Typography, Card, CardContent, Grid, Paper, Chip, LinearProgress, Tooltip, CircularProgress } from '@mui/material';
 import { TrendingUp, Refresh, Info, AccountBalance, Timeline, Settings } from '@mui/icons-material';
-import { toast } from 'react-toastify';
 import { FireApi } from '../../hooks/useRequest';
 import TimeDisplay from '../TimeDuration';
 
@@ -74,8 +73,8 @@ if (loading) {
                                 <AccountBalance sx={{ mr: 1 }} />
                                 <Typography variant="h6">Total Staked</Typography>
                             </Box>
-                            <Typography variant="h3" sx={{ fontWeight: 'bold' }}>
-                                {info?.totalStaked || '1,250,000'}
+                            <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                                {info?.totalStaked || '0'}
                             </Typography>
                             {/* <Typography variant="body2" sx={{ opacity: 0.8 }}>
                 USD Value: $2,500,000
@@ -96,7 +95,7 @@ if (loading) {
                                 <TrendingUp sx={{ mr: 1 }} />
                                 <Typography variant="h6">Current Cycle  </Typography>
                             </Box>
-                            <Typography variant="h3" sx={{ fontWeight: 'bold' }}>
+                            <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                                 {info?.cycle}
                             </Typography>
                             {/* <Typography variant="body2" sx={{ opacity: 0.8 }}>
@@ -117,7 +116,7 @@ if (loading) {
                                 <Refresh sx={{ mr: 1 }} />
                                 <Typography variant="h6">Phase</Typography>
                             </Box>
-                            <Typography variant="h3" sx={{ fontWeight: 'bold' }}>
+                            <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
                                 {info?.phase}
                             </Typography>
                             {/* <Typography variant="body2" sx={{ opacity: 0.8 }}>
