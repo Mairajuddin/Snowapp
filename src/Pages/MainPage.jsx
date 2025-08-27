@@ -97,6 +97,7 @@ const MainPage = () => {
     // }, 4000);
 
     // hello
+    // check again
   };
   const getNextPhaseName = () => {
     switch (currentPhase) {
