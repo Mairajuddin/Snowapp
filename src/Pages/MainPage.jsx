@@ -78,7 +78,7 @@ const MainPage = () => {
     if (!stakeAmount || parseFloat(stakeAmount) <= 0) return;
     try {
       const payload={
-       amount: stakeAmount,
+       amount: stakeAmount
        
       }
       const response = await FireApi('stake-token', 'POST', payload);
@@ -95,6 +95,8 @@ const MainPage = () => {
     //   addToast('success', `Successfully staked ${stakeAmount} CYCLX`);
     //   setStakeAmount('');
     // }, 4000);
+
+    // hello
   };
   const getNextPhaseName = () => {
     switch (currentPhase) {
