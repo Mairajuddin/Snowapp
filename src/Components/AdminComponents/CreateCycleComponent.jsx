@@ -177,7 +177,8 @@ const CreateCycleComponent = () => {
     startingTime: Math.floor(startingTimeMs / 1000), 
     stakingDuration: parseInt(formData.stakingDuration) * 60,  
 claimDuration: parseInt(formData.claimDuration) * 60,
-tokenAddress: formData.tokenAddress,
+tokenAddress: '0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66',
+// formData.tokenAddress,
   };
 
     try {
@@ -423,6 +424,7 @@ tokenAddress: formData.tokenAddress,
                       fullWidth
                       label="Token Address"
                       type="text"
+                      disabled
                       value={formData.tokenAddress}
                       onChange={handleInputChange('tokenAddress')}
                       placeholder="0xBd3CE885Ba6263a494bc363F9f77aF2Db0b68aA4"

@@ -1,13 +1,15 @@
 
 import React, { useState, useEffect } from 'react';
-import { Container, Grid, Box, Card, CardContent, Typography, Chip, IconButton, TextField, Button } from '@mui/material';
+import { Container, Grid, Box, Card, CardContent, Typography, Chip, IconButton, TextField, Button, CircularProgress } from '@mui/material';
 import { RefreshCw } from 'lucide-react';
 
 import Header from '../Components/Header';
 import Footer from '../Components/Footer';
 import ToastContainer from '../Components/ToastContainer';
-import { connectWalletFunc, disconnectWalletFunc } from '../utils/walletUtils';
+import { claimTokens, connectWalletFunc, disconnectWalletFunc, getUserStakes, stakeTokenFunc } from '../utils/walletUtils';
 import { FireApi } from '../hooks/useRequest';
+import TimeDisplay from '../Components/TimeDuration';
+import CountdownTimer from '../Components/CountdownTimer';
 
 const MainPage = () => {
   const [currentPhase, setCurrentPhase] = useState('stake');
@@ -18,22 +20,11 @@ const MainPage = () => {
   const [snowBalance, setSnowBalance] = useState('1,234.56');
   const [previousBalance, setPreviousBalance] = useState('800.12');
   const [toasts, setToasts] = useState([]);
-  // const [isApproved, setIsApproved] = useState(false);
+  const [info, setInfo] = useState()
+  const [loading, setLoading] = useState(false)
+  const [userStakeInfo, setUserStakeInfo] = useState(null);
 
-  // Countdown logic
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCountdown(prev => {
-        let { days, hours, minutes, seconds } = prev;
-        if (seconds > 0) seconds--;
-        else if (minutes > 0) { minutes--; seconds = 59; }
-        else if (hours > 0) { hours--; minutes = 59; seconds = 59; }
-        else if (days > 0) { days--; hours = 23; minutes = 59; seconds = 59; }
-        return { days, hours, minutes, seconds };
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
+
 
   const addToast = (type, message) => {
     const id = Date.now();
@@ -41,6 +32,16 @@ const MainPage = () => {
     setTimeout(() => removeToast(id), type === 'success' ? 5000 : 8000);
   };
   const removeToast = id => setToasts(prev => prev.filter(t => t.id !== id));
+
+  const handleUpdatePhase = async () => {
+    try {
+      const response = await FireApi('admin/update-phase', 'POST')
+
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
 
 
   const connectWallet = async () => {
@@ -51,6 +52,7 @@ const MainPage = () => {
       if (result && result.address) {
         setIsWalletConnected(true);
         setWalletAddress(result.address);
+        handleGetInfo()
         addToast('success', 'Wallet connected successfully');
       } else {
         addToast('error', 'Failed to connect wallet');
@@ -67,50 +69,91 @@ const MainPage = () => {
     addToast('error', 'Wallet disconnected');
   };
 
-  // const handleApprove = () => {
-  //   addToast('pending', 'Approving CYCLX tokens...');
-  //   setTimeout(() => {
-  //     setIsApproved(true);
-  //     addToast('success', 'CYCLX tokens approved');
-  //   }, 3000);
-  // };
-  const handleStake = async () => {
-    if (!stakeAmount || parseFloat(stakeAmount) <= 0) return;
+  const handleGetInfo = async () => {
+    setLoading(true);
     try {
-      const payload={
-       amount: stakeAmount
-       
-      }
-      const response = await FireApi('stake-token', 'POST', payload);
-      if (response?.success || response?.Ok) {
-        console.log(response)
-      } else {
-        console.log(response)
+      const response = await FireApi("get-cycle-info", "GET");
+
+      if (response?.success || response?.ok) {
+        setInfo(response?.data);
+
+        // if (response?.data?.cycle) {
+        //   const stakeRes = await getUserStakes(response.data.cycle);
+        //   if (stakeRes.success) {
+        //     setUserStakeInfo(stakeRes);
+        //   }
+        // }
       }
     } catch (error) {
-      console.log(error)
+      console.error("API call failed:", error);
+    } finally {
+      setLoading(false);
     }
-    // addToast('pending', 'Staking CYCLX tokens...');
-    // setTimeout(() => {
-    //   addToast('success', `Successfully staked ${stakeAmount} CYCLX`);
-    //   setStakeAmount('');
-    // }, 4000);
-
-    // hello
-    // check again
   };
-  const getNextPhaseName = () => {
-    switch (currentPhase) {
-      case 'presale':
-        return 'Public Sale';
-      case 'public':
-        return 'Claiming';
-      case 'claiming':
-        return 'Distribution';
-      default:
-        return 'Next Phase';
+
+
+  useEffect(() => {
+    handleGetInfo();
+  }, []);
+
+
+  const handleRefereshStake = async () => {
+    const stakeRes = await getUserStakes();
+    console.log(stakeRes, 'KJSDKJHSSDHKJDSSSJKS')
+    if (stakeRes.success) {
+      setUserStakeInfo(stakeRes.data);
+    } else {
+      console.error("Failed to fetch stake info:", stakeRes.message);
     }
   }
+
+
+
+
+  useEffect(() => {
+    if (userStakeInfo !== null) {
+      console.log("Updated stake info:", userStakeInfo);
+    }
+  }, [userStakeInfo]);
+
+
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCountdown(prev => {
+        let { days, hours, minutes, seconds } = prev;
+        if (seconds > 0) seconds--;
+        else if (minutes > 0) { minutes--; seconds = 59; }
+        else if (hours > 0) { hours--; minutes = 59; seconds = 59; }
+        else if (days > 0) { days--; hours = 23; minutes = 59; seconds = 59; }
+        return { days, hours, minutes, seconds };
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const handleStake = async () => {
+    if (!stakeAmount || parseFloat(stakeAmount) <= 0 || info?.phase !== 'Staking') return;
+    handleUpdatePhase()
+    await stakeTokenFunc(stakeAmount, info?.cycle)
+
+  };
+
+  // handleClaim
+  const handleClaim = async () => {
+    handleUpdatePhase()
+    const res = await claimTokens();
+    if (res.success) {
+      console.log(res, 'check my data here ebeta')
+
+    } else {
+      alert(`Error: ${res.message}`);
+    }
+  };
+
+
+
+
   const getPhaseColor = () => {
     switch (currentPhase) {
       case 'rest': return '#94A3B8';
@@ -121,6 +164,23 @@ const MainPage = () => {
   };
   const formatNumber = num => num.toString().padStart(2, '0');
 
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          height: '100vh',
+          width: '100%',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: '#0B1523', color: '#E2E8F0', fontFamily: 'Inter, sans-serif' }}>
       <Header
@@ -130,7 +190,17 @@ const MainPage = () => {
         disconnectWallet={disconnectWallet}
       />
 
+
       <Container sx={{ py: 4 }}>
+        <Button
+          variant="contained"
+          size="small"
+          onClick={handleGetInfo}
+          sx={{ my: 2, display: "flex", alignItems: "center", gap: 1 }}
+        >
+          <RefreshCw size={16} />
+          Refresh Cycle
+        </Button>
 
         <Card sx={{ p: 3, textAlign: 'center', mb: 4, bgcolor: '#111827', borderRadius: '12px' }}>
           {/* Current Phase Header */}
@@ -147,18 +217,20 @@ const MainPage = () => {
             />
           </Box>
 
-          {/* Current Phase Countdown */}
-          <Typography
+          {/* <Typography
             variant="h3"
             sx={{ color: '#E2E8F0', fontFamily: 'monospace', fontWeight: 700, letterSpacing: '3px', mb: 0.5 }}
           >
             {formatNumber(countdown.days)}:{formatNumber(countdown.hours)}:{formatNumber(countdown.minutes)}:{formatNumber(countdown.seconds)}
-          </Typography>
+          </Typography> */}
+          {/* <CountdownTimer targetTimestamp={info?.startTimestamp} label='Start Staking' /> */}
+          <CountdownTimer targetTimestamp={info?.stakingEnd} label='Staking End' />
+          <CountdownTimer targetTimestamp={info?.claimEnd} label='Claim End' />
           <Typography variant="caption" sx={{ color: '#94A3B8', letterSpacing: '1.5px', mb: 3 }}>
             DD : HH : MM : SS
           </Typography>
 
-          <Box
+          {/* <Box
             component="hr"
             sx={{
               borderColor: 'white',
@@ -170,8 +242,6 @@ const MainPage = () => {
               marginRight: 'auto',
             }}
           />
-
-          {/* Next Phase Info */}
           <Box display="flex" justifyContent="center" gap={1} mb={1} flexWrap="wrap">
             <Typography variant="body2" sx={{ color: '#94A3B8', fontWeight: 500 }}>
               Next Phase Begins
@@ -180,8 +250,6 @@ const MainPage = () => {
               Pre-Sale
             </Typography>
           </Box>
-
-          {/* Next Phase Countdown */}
           <Typography
             variant="h4"
             sx={{ color: '#E2E8F0', fontFamily: 'monospace', fontWeight: 600, letterSpacing: '2px' }}
@@ -190,7 +258,7 @@ const MainPage = () => {
           </Typography>
           <Typography variant="caption" sx={{ color: '#94A3B8', letterSpacing: '1.5px' }}>
             Time Remaining
-          </Typography>
+          </Typography> */}
         </Card>
 
 
@@ -204,19 +272,19 @@ const MainPage = () => {
                 {/* Title & Refresh Button */}
                 <Box display="flex" justifyContent="space-between" mb={1}>
                   <Typography variant="body2" sx={{ color: '#94A3B8' }}>Your CYCLXv3 Balance</Typography>
-                  <IconButton sx={{ color: '#7DC4FF' }} >
+                  <IconButton sx={{ color: '#7DC4FF', cursor: 'pointer' }} onClick={handleRefereshStake} >
                     <RefreshCw size={16} />
                   </IconButton>
                 </Box>
 
                 {/* Balance */}
-                <Typography variant="h5" sx={{ fontWeight: 600 }}>{snowBalance}</Typography>
+                <Typography variant="h5" sx={{ fontWeight: 600 }}>{info?.totalStaked}</Typography>
                 <Typography variant="body2" sx={{ color: '#94A3B8' }}>CYCLX</Typography>
 
                 {/* Currently Staked Amount */}
                 <Box mt={2}>
                   <Typography variant="body2" sx={{ color: '#94A3B8' }}>Currently Staked</Typography>
-                  <Typography sx={{ fontWeight: 500, fontSize: '14px' }}>{stakeAmount || 0} CYCLX</Typography>
+                  <Typography sx={{ fontWeight: 500, fontSize: '14px' }}>{userStakeInfo || 0} CYCLX</Typography>
                 </Box>
 
                 {/* Active Version */}
@@ -242,46 +310,76 @@ const MainPage = () => {
               <Card sx={{ bgcolor: '#111827', color: '#E2E8F0', borderRadius: '12px' }}>
                 <CardContent>
                   <Typography variant="h6" mb={2} sx={{ fontWeight: 600 }}>Stake CYCLX Tokens</Typography>
-                  <TextField
-                    type="number"
-                    fullWidth
-                    value={stakeAmount}
-                    onChange={(e) => setStakeAmount(e.target.value)}
-                    placeholder="0.0"
-                    variant="outlined"
-                    InputProps={{ style: { color: '#E2E8F0', borderRadius: '6px' } }}
-                    sx={{ mb: 1 }}
-                  />
-                  <Typography variant="caption" sx={{ color: '#94A3B8' }}>≈ 0.0013 ETH gas</Typography>
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    sx={{ mt: 2, bgcolor: '#00C48C', color: '#0B1523', fontWeight: 600, borderRadius: '6px', '&:hover': { bgcolor: '#00b37d' } }}
-                    disabled={!stakeAmount || parseFloat(stakeAmount) <= 0}
-                    onClick={handleStake}
-                  >
-                    Stake CYCLX
-                  </Button>
-                  {/* {!isApproved ? (
+                  {info?.phase === 'Staking' ? (
+                    <>
+                      <TextField
+                        type="number"
+                        fullWidth
+                        value={stakeAmount}
+                        onChange={(e) => setStakeAmount(e.target.value)}
+                        placeholder="0.0"
+                        variant="outlined"
+                        InputProps={{ style: { color: '#E2E8F0', borderRadius: '6px' } }}
+                        sx={{ mb: 1 }}
+                      />
+                      <Typography variant="caption" sx={{ color: '#94A3B8' }}>
+                        ≈ 0.0013 ETH gas
+                      </Typography>
+                      <Button
+                        fullWidth
+                        variant="contained"
+                        sx={{
+                          mt: 2,
+                          bgcolor: '#00C48C',
+                          color: '#0B1523',
+                          fontWeight: 600,
+                          borderRadius: '6px',
+                          '&:hover': { bgcolor: '#00b37d' },
+                        }}
+                        disabled={!stakeAmount || parseFloat(stakeAmount) <= 0}
+                        onClick={handleStake}
+                      >
+                        Stake CYCLX
+                      </Button>
+                    </>
+                  ) : info?.phase === 'Claiming' ? (   // 👈 yahan pe ? lagana hai
                     <Button
                       fullWidth
                       variant="contained"
-                      sx={{ mt: 2, bgcolor: '#7DC4FF', color: '#0B1523', fontWeight: 600, borderRadius: '6px', '&:hover': { bgcolor: '#6cb4e5' } }}
-                      onClick={handleApprove}
+                      sx={{
+                        mt: 2,
+                        bgcolor: '#00C48C',
+                        color: '#0B1523',
+                        fontWeight: 600,
+                        borderRadius: '6px',
+                        '&:hover': { bgcolor: '#00b37d' },
+                      }}
+                      onClick={handleClaim}
                     >
-                      Approve CYCLX
+                      Claim CYCLX
                     </Button>
                   ) : (
                     <Button
                       fullWidth
                       variant="contained"
-                      sx={{ mt: 2, bgcolor: '#00C48C', color: '#0B1523', fontWeight: 600, borderRadius: '6px', '&:hover': { bgcolor: '#00b37d' } }}
-                      disabled={!stakeAmount || parseFloat(stakeAmount) <= 0}
-                      onClick={handleStake}
+                      disabled
+                      sx={{
+                        mt: 2,
+                        bgcolor: '#00C48C',
+                        fontWeight: 600,
+                        borderRadius: '6px',
+                        cursor: 'not-allowed',
+                        color: 'white',
+                        '&:hover': { bgcolor: '#00b37d' },
+                      }}
+                      onClick={handleClaim}
                     >
-                      Stake CYCLX
+                      Rest
                     </Button>
-                  )} */}
+                  )}
+
+
+
                 </CardContent>
               </Card>
             )}

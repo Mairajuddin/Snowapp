@@ -3,13 +3,14 @@ import { Box, Typography, Card, CardContent, Grid, Paper, Chip, LinearProgress, 
 import { TrendingUp, Refresh, Info, AccountBalance, Timeline, Settings } from '@mui/icons-material';
 import { FireApi } from '../../hooks/useRequest';
 import TimeDisplay from '../TimeDuration';
+import CountdownTimer from '../CountdownTimer';
 
 
 const AdminHome = () => {
     const [info, setInfo] = useState()
-const [loading,setLoading]=useState(false)
+    const [loading, setLoading] = useState(false)
     const handleGetInfo = async () => {
-setLoading(true)
+        setLoading(true)
         try {
             const response = await FireApi("get-cycle-info", "GET");
 
@@ -20,9 +21,7 @@ setLoading(true)
 
             } else {
                 setLoading(false)
-
                 // toast.error(response?.message || 'failed')
-
             }
         } catch (error) {
             setLoading(false)
@@ -30,28 +29,28 @@ setLoading(true)
             console.error("API call failed:", error);
         }
 
-        console.log("Form Data:", submitData);
+      
     };
 
     useEffect(() => {
         handleGetInfo();
     }, []);
 
-if (loading) {
-  return (
-    <Box
-      sx={{
-        height: '100vh',
-        width: '100%',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center'
-      }}
-    >
-      <CircularProgress />
-    </Box>
-  );
-}
+    if (loading) {
+        return (
+            <Box
+                sx={{
+                    height: '100vh',
+                    width: '100%',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                }}
+            >
+                <CircularProgress />
+            </Box>
+        );
+    }
 
 
     return (
@@ -117,7 +116,7 @@ if (loading) {
                                 <Typography variant="h6">Phase</Typography>
                             </Box>
                             <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-                                {info?.phase}
+                                {info?.cycleEnded ? "Ended":info?.phase}{/* {info?.phase} */}
                             </Typography>
                             {/* <Typography variant="body2" sx={{ opacity: 0.8 }}>
                 This Month
@@ -125,7 +124,7 @@ if (loading) {
                         </CardContent>
                     </Card>
                 </Grid>
-        
+
                 <Grid item xs={12}>
                     <Paper sx={{
                         background: 'rgba(255, 255, 255, 0.05)',
@@ -138,7 +137,7 @@ if (loading) {
                         </Typography>
                         <Grid container spacing={2}>
                             {/* Previous TOken */}
-                           <Grid item xs={12} md={4}>
+                            <Grid item xs={12} md={4}>
                                 <Card sx={{
                                     background: 'rgba(255, 255, 255, 0.08)',
                                     border: '1px solid rgba(255, 255, 255, 0.12)'
@@ -230,26 +229,30 @@ if (loading) {
 
                     </Paper>
                 </Grid>
-                 {/* -----------------------------------------duration------------- */}
+                {/* -----------------------------------------duration------------- */}
             </Grid>
-              <Grid item xs={12} md={4}>
-                    <Box
-                        sx={{
-                            background: "none",
-                            color: "white",
-                            p: 2, // padding for spacing
-                            borderRadius: 2, // thoda rounded look agar chaho
-                        }}
-                    >
-                        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                            <Typography variant="h6">Time Stamps</Typography>
-                        </Box>
-
-                        <TimeDisplay seconds={info?.startTimestamp} label="Start" />
-                        <TimeDisplay seconds={info?.stakingEnd} label="Staking End" />
-                        <TimeDisplay seconds={info?.claimEnd} label="Claim End" />
+            <Grid item xs={12} md={4}>
+                <Box
+                    sx={{
+                        background: "none",
+                        color: "white",
+                        p: 2, // padding for spacing
+                        borderRadius: 2, // thoda rounded look agar chaho
+                    }}
+                >
+                    <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                        <Typography variant="h6">Time Stamps</Typography>
                     </Box>
-                </Grid>
+
+                    {/* <TimeDisplay seconds={info?.startTimestamp} label="Start" />
+                    <TimeDisplay seconds={info?.stakingEnd} label="Staking End" />
+                    <TimeDisplay seconds={info?.claimEnd} label="Claim End" /> */}
+                     {/* <CountdownTimer targetTimestamp={info?.startTimestamp}  label='Start Staking'/> */}
+                      <CountdownTimer targetTimestamp={info?.stakingEnd} label='Staking End'/>
+                          <CountdownTimer targetTimestamp={info?.claimEnd}  label='Claim End'/>
+
+                </Box>
+            </Grid>
 
         </Box>
     );

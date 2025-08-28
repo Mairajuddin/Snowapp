@@ -1,8 +1,14 @@
 import { ethers } from 'ethers';
 
 import STAKING_MANAGER_ABI from "./StakingManager.json";
-import ERC20ABI from "./ERC20.json";
+import stakingAbi from "./StakingManager.json";  
+import ERC20ABI from "./ERC20.json"; // ERC20 standard ABI
 
+const CYCLE={
+  0:'Rest',
+  1:'Staking',
+  2:'Claiming'
+}
 
 
 
@@ -42,128 +48,208 @@ export const disconnectWalletFunc = () => {
   return true;
 };
 
+const STAKING_ADDRESS = "0x67B5656d60a809915323Bf2C40A8bEF15A152e3e"; //stakingmanager network
+const TOKEN_ADDRESS   = "0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66"; //Token address
+const Wallet_address=localStorage.getItem("wallet_address")
 
-export const stakeToken=async(amount, provider, wallet)=>  {
-  try {
-    config();
 
-    // const { STAKING_MANAGER_ABI,  ERC20ABI } =
-    //   process.env;
 
-    const Cycle = {
-      0: "Rest",
-      1: "Staking",
-      2: "Claiming",
-    };
+export const stakeTokenFunc = async (amount) => {
 
-    const networks = Object.keys(STAKING_MANAGER_ABI?.networks)[0];
+    const provider = new ethers.BrowserProvider(window.ethereum);
+  const signer = await provider.getSigner();
+  const userAddress = await signer.getAddress();
 
-    const STAKING_MANAGER =
-      STAKING_MANAGER_ABI.networks[networks]?.address 
 
     const stakingContract = new ethers.Contract(
-      STAKING_MANAGER,
-      STAKING_MANAGER_ABI.abi,
-      provider
+      STAKING_ADDRESS,
+      stakingAbi.abi,
+      signer
     );
+   let cycleId = await stakingContract.currentCycleId();
 
-    const staking = stakingContract.connect(wallet);
-
-    let cycleId = await staking.currentCycleId();
-
-    if (Number(cycleId) === 0) return;
-
-    const latestCycleId = Number(await staking.currentCycleId()) - 1;
-
-    const cycleInfo = await staking.getCycle(latestCycleId);
-
-    const phase = Number(cycleInfo.phase);
-    console.log(Cycle[phase], "Rest");
-
-    // if (Cycle[phase] == "Rest") await phraseUpdate(latestCycleId);
-
-    const startTimestamp = Number(cycleInfo.startTimestamp);
-
-    if (startTimestamp <= 0) return;
-
-    // let nonce = await provider.getTransactionCount(wallet?.address);
-    // let nonce = await provider.getTransactionCount(wallet.address, "pending");
-
-    // nonce = nonce ? nonce + 1 : null;
-
-    let receipt = null;
-
-    const currentTime = Math.floor(Date.now() / 1000);
-
-    console.log("Debug info:", {
-      currentPhase: Cycle[phase],
-      cycleId: latestCycleId,
-      startTimestamp: Number(cycleInfo.startTimestamp),
-      stakingEnd: Number(cycleInfo.stakingEnd),
-      currentTime,
-      isInStakingPeriod:
-        currentTime >= Number(cycleInfo.startTimestamp) &&
-        currentTime < Number(cycleInfo.stakingEnd),
-    });
-
-    if (Cycle[phase] === "Claiming") {
-      // Claiming
-      console.log("Claiming rewards...");
-      await staking.claim();
-    } else if (Cycle[phase] === "Staking") {
-      // Staking
-      console.log("Staking token...");
-
-      const tokenAddress = await staking.currentStakedToken();
-
-      const token = new ethers.Contract(tokenAddress, ERC20ABI?.abi, wallet);
-
-      const decimals = await token.decimals();
-
-      const parsedAmount = ethers.parseUnits(amount.toString(), decimals);
-
-      const balance = await token.balanceOf(wallet.address);
-
-      console.log("User balance:", ethers.formatUnits(balance, decimals));
-
-      if (balance < parsedAmount) return;
-
-      // Check allowance
-      const allowance = await token.allowance(wallet.address, staking.target);
-      console.log(
-        "Current allowance:",
-        ethers.formatUnits(allowance, decimals)
-      );
-
-      if (allowance < parsedAmount) {
-        console.log("Approving tokens with correct amount...");
-
-        const approveTx = await token.approve(staking.target, parsedAmount);
-
-        await approveTx.wait();
-      }
-
-      // Stake
-      const stakeTx = await staking.stake(latestCycleId, amount, {
-        gasLimit: 1_000_000,
-        // nonce,
-      });
-      console.log({ stakeTx });
-
-      const StakeTxReceipt = await stakeTx.wait();
-
-      console.log({ StakeTxReceipt });
-
-      console.log(`Staked ${amount} TOKENS IN CYCLE: ${latestCycleId}`, "\n");
-
-      return;
-    } else {
-      console.log("CURRENTLY IN REST PHASE. WAITING FOR THE NEXT CYCLE...\n");
+    if (Number(cycleId) === 0) {
+      return { success: false, message: "No active cycle" };
     }
 
-    return;
+    
+    const latestCycleId = Number(cycleId) - 1;
+
+  const GANACHE_PARAMS = {
+    chainId: "0x539", 
+    chainName: "Ganache (Dev)",
+    rpcUrls: ["http://64.23.166.88:8545/"],
+    nativeCurrency: {
+      name: "Ethereum",
+      symbol: "ETH",
+      decimals: 18,
+    },
+  };
+
+  
+  try {
+    await window.ethereum.request({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId: GANACHE_PARAMS.chainId }],
+    });
+  } catch (switchError) {
+    if (switchError.code === 4902) {
+      await window.ethereum.request({
+        method: "wallet_addEthereumChain",
+        params: [GANACHE_PARAMS],
+      });
+    } else {
+      console.error("Switch error:", switchError);
+      return;
+    }
+  }
+
+  if (!window.ethereum) throw new Error("MetaMask not installed");
+
+  // const provider = new ethers.BrowserProvider(window.ethereum);
+  // const signer = await provider.getSigner();
+  // const userAddress = await signer.getAddress();
+
+  
+  const token = new ethers.Contract(TOKEN_ADDRESS, ERC20ABI.abi, signer);
+  const staking = new ethers.Contract(STAKING_ADDRESS, stakingAbi.abi, signer);
+
+
+  const decimals = 18; 
+  // const stakeAmountWei = amount;
+  const stakeAmountWei = ethers.parseUnits(amount.toString(), decimals);
+const balance = await token.balanceOf(Wallet_address);
+    console.log("User balance:", ethers.formatUnits(balance, decimals));
+
+    if (balance < stakeAmountWei)
+      return alert('Insufficient tokens to stake')
+  
+  const allowance = await token.allowance(userAddress, STAKING_ADDRESS);
+  if (allowance < stakeAmountWei) {
+    const approveTx = await token.approve(STAKING_ADDRESS, stakeAmountWei);
+    await approveTx.wait();
+    console.log("✅ Tokens approved");
+  }
+
+  let nonce = await provider.getTransactionCount(Wallet_address);
+  const tx = await staking.stake(latestCycleId, amount,{
+        gasLimit: 1000000,
+        nonce,
+      });
+  await tx.wait();
+  console.log(`✅ Successfully staked ${amount} tokens in cycle ${latestCycleId}`);
+};
+
+
+
+// --------------------------GET USER STAKES-----------------------------------------------
+
+export const getUserStakes = async (cycleIdParam = null) => {
+  try {
+    
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const signer = await provider.getSigner();
+    const userAddress = await signer.getAddress();
+
+    // Contract instance
+    const stakingContract = new ethers.Contract(
+      STAKING_ADDRESS,
+      stakingAbi.abi,
+      signer
+    );
+
+    // Get current cycle
+    let cycleId = await stakingContract.currentCycleId();
+
+    if (Number(cycleId) === 0) {
+      return { success: false, message: "No active cycle" };
+    }
+
+    // Agar parameter diya hai to usko use karo warna latest cycle
+    const latestCycleId =
+      cycleIdParam !== null ? Number(cycleIdParam) : Number(cycleId) - 1;
+
+    console.log({ latestCycleId });
+
+    // Get user stake
+    let data = await stakingContract.getUserStake(
+      latestCycleId,
+      userAddress
+    );
+
+    data = Number(data);
+    console.log(data,'jhjksdhkjhfsdkjfhskhfskdj')
+
+    return { success: true, data, message: "success" };
   } catch (error) {
     console.error(error);
-    return;
+    return {
+      success: false,
+      message: "Something went wrong",
+      error: error.message,
+    };
   }
-}
+};
+
+// -----------------CLAIM TOKENS-----------------------------------------
+
+
+export const claimTokens = async () => {
+  try {
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const signer = await provider.getSigner();
+    const userAddress = await signer.getAddress();
+
+    const stakingContract = new ethers.Contract(
+      STAKING_ADDRESS,
+      stakingAbi.abi,
+      signer
+    );
+
+    let cycleId = await stakingContract.currentCycleId();
+    if (Number(cycleId) === 0) {
+      throw new Error("No active cycle");
+    }
+
+    // ⚠️ Try without -1 first
+    const latestCycleId = Number(cycleId) - 1;
+
+    let userStakes = await stakingContract.getUserStake(latestCycleId, userAddress);
+    console.log("User stakes:", Number(userStakes));
+
+    if (Number(userStakes) === 0) {
+      throw new Error("No stakes found in this cycle");
+    }
+
+    const cycleInfo = await stakingContract.getCycle(latestCycleId);
+    console.log("Cycle info jhjhhjjjhjhhjhj:", cycleInfo);
+
+    const phase = Number(cycleInfo.phase);
+    if (CYCLE[phase]!=='Claiming') {
+      throw new Error(`Cycle is currently in phase: ${CYCLE[phase]}`);
+    }
+    if (
+      cycleInfo?.rewardToken == "0x0000000000000000000000000000000000000000"
+    ) {
+       throw new Error(` Cycle not finalized`);
+     
+    }
+
+
+
+    // let nonce = await provider.getTransactionCount(Wallet_address, "latest")
+    const tx = await stakingContract.claim(latestCycleId, {
+      gasLimit: 1_000_000, // adjust if needed
+    });
+
+    await tx.wait();
+
+    console.log("Claim Tx:", tx.hash);
+    return { success: true, hash: tx.hash };
+
+  } catch (error) {
+    console.error("Claim error:", error);
+    return { success: false, message: error.message };
+  }
+};
+
