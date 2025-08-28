@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 
-import STAKING_MANAGER_ABI from "./StakingManager.json";
+// import STAKING_MANAGER_ABI from "./StakingManager.json";
 import stakingAbi from "./StakingManager.json";  
 import ERC20ABI from "./ERC20.json"; // ERC20 standard ABI
 
@@ -48,8 +48,8 @@ export const disconnectWalletFunc = () => {
   return true;
 };
 
-const STAKING_ADDRESS = "0x67B5656d60a809915323Bf2C40A8bEF15A152e3e"; //stakingmanager network
-const TOKEN_ADDRESS   = "0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66"; //Token address
+const STAKING_ADDRESS = "0xCfEB869F69431e42cdB54A4F4f105C19C080A601"; //stakingmanager network
+const TOKEN_ADDRESS   = "0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B"; //Token address
 const Wallet_address=localStorage.getItem("wallet_address")
 
 

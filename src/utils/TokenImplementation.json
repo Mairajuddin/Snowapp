@@ -11237,15 +11237,15 @@
     "version": "0.8.21+commit.d9974bed.Emscripten.clang"
   },
   "networks": {
-    "1756304879342": {
+    "1756397012926": {
       "events": {},
       "links": {},
-      "address": "0x0290FB167208Af455bB137780163b7B7a9a10C16",
-      "transactionHash": "0xd9c9121170d0e8cf9c2f839c2324668ccfb54e03ae50208182724d6f594a3442"
+      "address": "0xe78A0F7E598Cc8b0Bb87894B0F60dD2a88d6a8Ab",
+      "transactionHash": "0xacd5b46b56151279b374085f1ee5f94ca1480528b7fb65a7c5fe1562197f35cf"
     }
   },
   "schemaVersion": "3.4.16",
-  "updatedAt": "2025-08-27T14:54:06.582Z",
+  "updatedAt": "2025-08-28T16:05:42.606Z",
   "networkType": "ethereum",
   "devdoc": {
     "errors": {

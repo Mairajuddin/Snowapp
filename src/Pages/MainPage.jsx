@@ -164,21 +164,21 @@ const MainPage = () => {
   };
   const formatNumber = num => num.toString().padStart(2, '0');
 
-  if (loading) {
-    return (
-      <Box
-        sx={{
-          height: '100vh',
-          width: '100%',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}
-      >
-        <CircularProgress />
-      </Box>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <Box
+  //       sx={{
+  //         height: '100vh',
+  //         width: '100%',
+  //         display: 'flex',
+  //         justifyContent: 'center',
+  //         alignItems: 'center'
+  //       }}
+  //     >
+  //       <CircularProgress />
+  //     </Box>
+  //   );
+  // }
 
 
   return (
@@ -190,7 +190,20 @@ const MainPage = () => {
         disconnectWallet={disconnectWallet}
       />
 
+{loading ? (
+ <Box
+          sx={{
+            height: '100vh',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <CircularProgress />
+        </Box>
+):(
 
+<>
       <Container sx={{ py: 4 }}>
         <Button
           variant="contained"
@@ -386,7 +399,8 @@ const MainPage = () => {
           </Grid>
         </Grid>
       </Container>
-
+      </>
+)}
       <Footer />
       <ToastContainer toasts={toasts} removeToast={removeToast} />
     </Box>
