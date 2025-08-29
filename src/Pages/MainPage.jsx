@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Container, Grid, Box, Card, CardContent, Typography, Chip, IconButton, TextField, Button, CircularProgress } from '@mui/material';
+import { Container, Grid, Box, Card, CardContent, Typography, Chip, IconButton, TextField, Button, CircularProgress, Tooltip } from '@mui/material';
 import { RefreshCw } from 'lucide-react';
 
 import Header from '../Components/Header';
@@ -164,6 +164,14 @@ const MainPage = () => {
   };
   const formatNumber = num => num.toString().padStart(2, '0');
 
+  const shortenAddress = (addr) => {
+    if (!addr) return "";
+    if (addr === "0x0000000000000000000000000000000000000000") return "0x0";
+    return addr.slice(0, 6) + "..." + addr.slice(-4);
+  };
+
+
+
   // if (loading) {
   //   return (
   //     <Box
@@ -190,8 +198,8 @@ const MainPage = () => {
         disconnectWallet={disconnectWallet}
       />
 
-{loading ? (
- <Box
+      {loading ? (
+        <Box
           sx={{
             height: '100vh',
             display: 'flex',
@@ -201,49 +209,49 @@ const MainPage = () => {
         >
           <CircularProgress />
         </Box>
-):(
+      ) : (
 
-<>
-      <Container sx={{ py: 4 }}>
-        <Button
-          variant="contained"
-          size="small"
-          onClick={handleGetInfo}
-          sx={{ my: 2, display: "flex", alignItems: "center", gap: 1 }}
-        >
-          <RefreshCw size={16} />
-          Refresh Cycle
-        </Button>
+        <>
+          <Container sx={{ py: 4 }}>
+            <Button
+              variant="contained"
+              size="small"
+              onClick={handleGetInfo}
+              sx={{ my: 2, display: "flex", alignItems: "center", gap: 1 }}
+            >
+              <RefreshCw size={16} />
+              Refresh Cycle
+            </Button>
 
-        <Card sx={{ p: 3, textAlign: 'center', mb: 4, bgcolor: '#111827', borderRadius: '12px' }}>
-          {/* Current Phase Header */}
-          <Box display="flex" justifyContent="center" gap={2} mb={2} alignItems="center" flexWrap="wrap">
-            <Chip
-              label="CYCLXv3"
-              // label="CYCLX"
-              sx={{ bgcolor: 'transparent', color: '#94A3B8', borderColor: '#94A3B8' }}
-              variant="outlined"
-            />
-            <Chip
-              label={`${currentPhase.charAt(0).toUpperCase() + currentPhase.slice(1)} Phase`}
-              sx={{ bgcolor: getPhaseColor(), color: '#0B1523', fontWeight: 600 }}
-            />
-          </Box>
+            <Card sx={{ p: 3, textAlign: 'center', mb: 4, bgcolor: '#111827', borderRadius: '12px' }}>
+              {/* Current Phase Header */}
+              <Box display="flex" justifyContent="center" gap={2} mb={2} alignItems="center" flexWrap="wrap">
+                <Chip
+                  label="CYCLXv3"
+                  // label="CYCLX"
+                  sx={{ bgcolor: 'transparent', color: '#94A3B8', borderColor: '#94A3B8' }}
+                  variant="outlined"
+                />
+                <Chip
+                  label={`${currentPhase.charAt(0).toUpperCase() + currentPhase.slice(1)} Phase`}
+                  sx={{ bgcolor: getPhaseColor(), color: '#0B1523', fontWeight: 600 }}
+                />
+              </Box>
 
-          {/* <Typography
+              {/* <Typography
             variant="h3"
             sx={{ color: '#E2E8F0', fontFamily: 'monospace', fontWeight: 700, letterSpacing: '3px', mb: 0.5 }}
           >
             {formatNumber(countdown.days)}:{formatNumber(countdown.hours)}:{formatNumber(countdown.minutes)}:{formatNumber(countdown.seconds)}
           </Typography> */}
-          {/* <CountdownTimer targetTimestamp={info?.startTimestamp} label='Start Staking' /> */}
-          <CountdownTimer targetTimestamp={info?.stakingEnd} label='Staking End' />
-          <CountdownTimer targetTimestamp={info?.claimEnd} label='Claim End' />
-          <Typography variant="caption" sx={{ color: '#94A3B8', letterSpacing: '1.5px', mb: 3 }}>
-            DD : HH : MM : SS
-          </Typography>
+              {/* <CountdownTimer targetTimestamp={info?.startTimestamp} label='Start Staking' /> */}
+              <CountdownTimer targetTimestamp={info?.stakingEnd} label='Staking End' />
+              <CountdownTimer targetTimestamp={info?.claimEnd} label='Claim End' />
+              <Typography variant="caption" sx={{ color: '#94A3B8', letterSpacing: '1.5px', mb: 3 }}>
+                DD : HH : MM : SS
+              </Typography>
 
-          {/* <Box
+              {/* <Box
             component="hr"
             sx={{
               borderColor: 'white',
@@ -272,135 +280,144 @@ const MainPage = () => {
           <Typography variant="caption" sx={{ color: '#94A3B8', letterSpacing: '1.5px' }}>
             Time Remaining
           </Typography> */}
-        </Card>
-
-
-
-        <Grid container spacing={4} >
-          {/* Balances */}
-          <Grid item xs={12} md={4} >
-
-            <Card sx={{ bgcolor: '#111827', color: '#E2E8F0', borderRadius: '12px' }}>
-              <CardContent>
-                {/* Title & Refresh Button */}
-                <Box display="flex" justifyContent="space-between" mb={1}>
-                  <Typography variant="body2" sx={{ color: '#94A3B8' }}>Your CYCLXv3 Balance</Typography>
-                  <IconButton sx={{ color: '#7DC4FF', cursor: 'pointer' }} onClick={handleRefereshStake} >
-                    <RefreshCw size={16} />
-                  </IconButton>
-                </Box>
-
-                {/* Balance */}
-                <Typography variant="h5" sx={{ fontWeight: 600 }}>{info?.totalStaked}</Typography>
-                <Typography variant="body2" sx={{ color: '#94A3B8' }}>CYCLX</Typography>
-
-                {/* Currently Staked Amount */}
-                <Box mt={2}>
-                  <Typography variant="body2" sx={{ color: '#94A3B8' }}>Currently Staked</Typography>
-                  <Typography sx={{ fontWeight: 500, fontSize: '14px' }}>{userStakeInfo || 0} CYCLX</Typography>
-                </Box>
-
-                {/* Active Version */}
-                <Box mt={2}>
-                  <Typography variant="body2" sx={{ color: '#94A3B8' }}>Active Version</Typography>
-                  <Typography sx={{ fontWeight: 500, fontSize: '14px' }}>{"CYCLXv3"}</Typography>
-                </Box>
-              </CardContent>
             </Card>
 
-            <Card sx={{ bgcolor: '#111827', mt: 2, borderRadius: '12px', opacity: 0.8 }}>
-              <CardContent>
-                <Typography variant="body2" sx={{ color: '#94A3B8' }}>Previous Version</Typography>
-                <Typography variant="h5" sx={{ fontWeight: 600 }}>{previousBalance}</Typography>
-                <Typography variant="body2" sx={{ color: '#94A3B8' }}>CYCLXv2</Typography>
-              </CardContent>
-            </Card>
-          </Grid>
 
-          {/* Action Panel */}
-          <Grid item xs={12} md={8} >
-            {currentPhase === 'stake' && isWalletConnected && (
-              <Card sx={{ bgcolor: '#111827', color: '#E2E8F0', borderRadius: '12px' }}>
-                <CardContent>
-                  <Typography variant="h6" mb={2} sx={{ fontWeight: 600 }}>Stake CYCLX Tokens</Typography>
-                  {info?.phase === 'Staking' ? (
-                    <>
-                      <TextField
-                        type="number"
-                        fullWidth
-                        value={stakeAmount}
-                        onChange={(e) => setStakeAmount(e.target.value)}
-                        placeholder="0.0"
-                        variant="outlined"
-                        InputProps={{ style: { color: '#E2E8F0', borderRadius: '6px' } }}
-                        sx={{ mb: 1 }}
-                      />
-                      <Typography variant="caption" sx={{ color: '#94A3B8' }}>
-                        ≈ 0.0013 ETH gas
+
+            <Grid container spacing={4} >
+              {/* Balances */}
+              <Grid item xs={12} md={4} >
+
+                <Card sx={{ bgcolor: '#111827', color: '#E2E8F0', borderRadius: '12px' }}>
+                  <CardContent>
+                    {/* Title & Refresh Button */}
+                    <Box display="flex" justifyContent="space-between" mb={1}>
+                      <Typography variant="body2" sx={{ color: '#94A3B8' }}>Your CYCLXv3 Balance</Typography>
+                      <IconButton sx={{ color: '#7DC4FF', cursor: 'pointer' }} onClick={handleRefereshStake} >
+                        <RefreshCw size={16} />
+                      </IconButton>
+                    </Box>
+
+                    {/* Balance */}
+                    {/* userStakeInfo */}
+                    {/* <Typography variant="h5" sx={{ fontWeight: 600 }}>{ info?.totalStaked}</Typography> */}
+                    <Typography variant="h5" sx={{ fontWeight: 600 }}>{ userStakeInfo}</Typography>
+
+                    <Typography variant="body2" sx={{ color: '#94A3B8' }}>CYCLX</Typography>
+
+                    {/* Currently Staked Amount */}
+                    <Box mt={2}>
+                      <Typography variant="body2" sx={{ color: '#94A3B8' }}>Currently Staked</Typography>
+                      <Typography sx={{ fontWeight: 500, fontSize: '14px' }}>{ stakeAmount ||  0} CYCLX</Typography>
+                    </Box>
+
+                    {/* Active Version */}
+                    <Box mt={2}>
+                      <Typography variant="body2" sx={{ color: '#94A3B8' }}>Active Version</Typography>
+                      <Typography sx={{ fontWeight: 500, fontSize: '14px' }}>{"CYCLXv3"}{"   "}{shortenAddress(info?.previoustoken)}</Typography>
+                    </Box>
+                  </CardContent>
+                </Card>
+
+                <Card sx={{ bgcolor: '#111827', mt: 2, borderRadius: '12px', opacity: 0.8 }}>
+                  <CardContent>
+                    <Typography variant="body2" sx={{ color: '#94A3B8' }}>Previous Version</Typography>
+                    {/* <Typography variant="h5" sx={{ fontWeight: 600 }}>{info?.previoustoken || previousBalance}</Typography> */}
+                    <Tooltip title={info?.previoustoken || ""}>
+                      <Typography sx={{ color: "#94a3b8", mb: 1, cursor: "pointer" }}>
+                        {shortenAddress(info?.previoustoken)}
                       </Typography>
-                      <Button
-                        fullWidth
-                        variant="contained"
-                        sx={{
-                          mt: 2,
-                          bgcolor: '#00C48C',
-                          color: '#0B1523',
-                          fontWeight: 600,
-                          borderRadius: '6px',
-                          '&:hover': { bgcolor: '#00b37d' },
-                        }}
-                        disabled={!stakeAmount || parseFloat(stakeAmount) <= 0}
-                        onClick={handleStake}
-                      >
-                        Stake CYCLX
-                      </Button>
-                    </>
-                  ) : info?.phase === 'Claiming' ? (   // 👈 yahan pe ? lagana hai
-                    <Button
-                      fullWidth
-                      variant="contained"
-                      sx={{
-                        mt: 2,
-                        bgcolor: '#00C48C',
-                        color: '#0B1523',
-                        fontWeight: 600,
-                        borderRadius: '6px',
-                        '&:hover': { bgcolor: '#00b37d' },
-                      }}
-                      onClick={handleClaim}
-                    >
-                      Claim CYCLX
-                    </Button>
-                  ) : (
-                    <Button
-                      fullWidth
-                      variant="contained"
-                      disabled
-                      sx={{
-                        mt: 2,
-                        bgcolor: '#00C48C',
-                        fontWeight: 600,
-                        borderRadius: '6px',
-                        cursor: 'not-allowed',
-                        color: 'white',
-                        '&:hover': { bgcolor: '#00b37d' },
-                      }}
-                      onClick={handleClaim}
-                    >
-                      Rest
-                    </Button>
-                  )}
+                    </Tooltip>
+
+                    <Typography variant="body2" sx={{ color: '#94A3B8' }}>CYCLXv2</Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+
+              {/* Action Panel */}
+              <Grid item xs={12} md={8} >
+                {currentPhase === 'stake' && isWalletConnected && (
+                  <Card sx={{ bgcolor: '#111827', color: '#E2E8F0', borderRadius: '12px' }}>
+                    <CardContent>
+                      <Typography variant="h6" mb={2} sx={{ fontWeight: 600 }}>Stake CYCLX Tokens</Typography>
+                      {info?.phase === 'Staking' ? (
+                        <>
+                          <TextField
+                            type="number"
+                            fullWidth
+                            value={stakeAmount}
+                            onChange={(e) => setStakeAmount(e.target.value)}
+                            placeholder="0.0"
+                            variant="outlined"
+                            InputProps={{ style: { color: '#E2E8F0', borderRadius: '6px' } }}
+                            sx={{ mb: 1 }}
+                          />
+                          <Typography variant="caption" sx={{ color: '#94A3B8' }}>
+                            ≈ 0.0013 ETH gas
+                          </Typography>
+                          <Button
+                            fullWidth
+                            variant="contained"
+                            sx={{
+                              mt: 2,
+                              bgcolor: '#00C48C',
+                              color: '#0B1523',
+                              fontWeight: 600,
+                              borderRadius: '6px',
+                              '&:hover': { bgcolor: '#00b37d' },
+                            }}
+                            disabled={!stakeAmount || parseFloat(stakeAmount) <= 0}
+                            onClick={handleStake}
+                          >
+                            Stake CYCLX
+                          </Button>
+                        </>
+                      ) : info?.phase === 'Claiming' ? (   // 👈 yahan pe ? lagana hai
+                        <Button
+                          fullWidth
+                          variant="contained"
+                          sx={{
+                            mt: 2,
+                            bgcolor: '#00C48C',
+                            color: '#0B1523',
+                            fontWeight: 600,
+                            borderRadius: '6px',
+                            '&:hover': { bgcolor: '#00b37d' },
+                          }}
+                          onClick={handleClaim}
+                        >
+                          Claim CYCLX
+                        </Button>
+                      ) : (
+                        <Button
+                          fullWidth
+                          variant="contained"
+                          disabled
+                          sx={{
+                            mt: 2,
+                            bgcolor: '#00C48C',
+                            fontWeight: 600,
+                            borderRadius: '6px',
+                            cursor: 'not-allowed',
+                            color: 'white',
+                            '&:hover': { bgcolor: '#00b37d' },
+                          }}
+                          onClick={handleClaim}
+                        >
+                          Rest
+                        </Button>
+                      )}
 
 
 
-                </CardContent>
-              </Card>
-            )}
-          </Grid>
-        </Grid>
-      </Container>
-      </>
-)}
+                    </CardContent>
+                  </Card>
+                )}
+              </Grid>
+            </Grid>
+          </Container>
+        </>
+      )}
       <Footer />
       <ToastContainer toasts={toasts} removeToast={removeToast} />
     </Box>
