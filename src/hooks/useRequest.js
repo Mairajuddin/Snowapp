@@ -3,8 +3,13 @@
 // export const baseURL = "http://192.168.18.33:5000";
 // export const imageURL = "http://192.168.18.33:5000/";
 
-export const baseURL = "http://64.23.166.88:7218";
-export const imageURL = "http://64.23.166.88:7218/";
+// export const baseURL = "http://64.23.166.88:7218";
+// export const imageURL = "http://64.23.166.88:7218/";
+
+// 
+export const baseURL = "https://aa1b1d758385.ngrok-free.app/";
+export const imageURL = "https://aa1b1d758385.ngrok-free.app";
+
 
 
 export const FireApi = async (endpoint, method, data = null, Headers = null) => {
