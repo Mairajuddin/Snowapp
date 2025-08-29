@@ -36,45 +36,88 @@ const FinalizeCycleComponent = () => {
     }));
   };
 
-
   const handleSubmit = async (event) => {
-    event.preventDefault();
-    setLoading(true)
+  event.preventDefault();
+  setLoading(true);
 
-    const submitData = {
-      name: formData.name,
-      symbol: formData.symbol.toUpperCase(),
-      //   initialSupply: formData.initialSupply
+  // validation rules
+  if (!formData.name.trim()) {
+    toast.error("Name is required");
+    setLoading(false);
+    return;
+  }
+
+  if (!formData.symbol.trim()) {
+    toast.error("Symbol is required");
+    setLoading(false);
+    return;
+  }
 
 
-    };
-    try {
-      const response = await FireApi("admin/create-token", "POST", submitData);
-
-      if (response?.success || response?.ok) {
-        toast.success(response?.message || 'successfull')
-        setLoading(false)
-        setFormData({
-          name: '',
-          symbol: '',
-
-        });
-      } else {
-        toast.error(response?.message || 'failed')
-        setLoading(false)
-        setFormData({
-          name: '',
-          symbol: '',
-
-        });
-      }
-    } catch (error) {
-      setLoading(false)
-      console.error("API call failed:", error);
-    }
-
-    console.log("Form Data:", submitData);
+  const submitData = {
+    name: formData.name.trim(),
+    symbol: formData.symbol.toUpperCase(),
   };
+
+  try {
+    const response = await FireApi("admin/create-token", "POST", submitData);
+
+    if (response?.success || response?.ok) {
+      toast.success(response?.message || "Successful");
+      setFormData({ name: "", symbol: "" });
+    } else {
+      toast.error(response?.message || "Failed");
+      setFormData({ name: "", symbol: "" });
+    }
+  } catch (error) {
+    console.error("API call failed:", error);
+    toast.error("Something went wrong, please try again");
+  } finally {
+    setLoading(false);
+  }
+
+  console.log("Form Data:", submitData);
+};
+
+
+  // const handleSubmit = async (event) => {
+  //   event.preventDefault();
+  //   setLoading(true)
+
+  //   const submitData = {
+  //     name: formData.name,
+  //     symbol: formData.symbol.toUpperCase(),
+  //     //   initialSupply: formData.initialSupply
+
+
+  //   };
+  //   try {
+  //     const response = await FireApi("admin/create-token", "POST", submitData);
+
+  //     if (response?.success || response?.ok) {
+  //       toast.success(response?.message || 'successfull')
+  //       setLoading(false)
+  //       setFormData({
+  //         name: '',
+  //         symbol: '',
+
+  //       });
+  //     } else {
+  //       toast.error(response?.message || 'failed')
+  //       setLoading(false)
+  //       setFormData({
+  //         name: '',
+  //         symbol: '',
+
+  //       });
+  //     }
+  //   } catch (error) {
+  //     setLoading(false)
+  //     console.error("API call failed:", error);
+  //   }
+
+  //   console.log("Form Data:", submitData);
+  // };
 
   return (
     <Box sx={{

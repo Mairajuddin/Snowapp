@@ -165,44 +165,102 @@ const CreateCycleComponent = () => {
     }));
   };
 
+  // const handleSubmit = async (event) => {
+  //   event.preventDefault();
+  //   setLoading(true)
+
+  //   const startingTimeMs = new Date(formData.startingTime).getTime();
+
+  //   const submitData = {
+  //     startingTime: Math.floor(startingTimeMs / 1000),
+  //     stakingDuration: parseInt(formData.stakingDuration) * 60,
+  //     claimDuration: parseInt(formData.claimDuration) * 60,
+  //     tokenAddress: '0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B',
+  //     // formData.tokenAddress,
+  //   };
+
+  //   try {
+  //     const response = await FireApi("admin/create-cycle", "POST", submitData);
+
+  //     if (response?.success || response?.ok) {
+  //       toast.success(response?.message || 'successfull')
+  //       setLoading(false)
+
+  //     } else {
+  //       toast.error(response?.message || 'failed')
+  //       setLoading(false)
+  //       setFormData({
+  //         startingTime: '',
+  //         stakingDuration: '',
+  //         claimDuration: '',
+  //         tokenAddress: ''
+  //       })
+  //     }
+  //   } catch (error) {
+  //     setLoading(false)
+  //     console.error("API call failed:", error);
+  //   }
+
+  //   console.log("Form Data:", submitData);
+  // };
+
   const handleSubmit = async (event) => {
-    event.preventDefault();
-    setLoading(true)
+  event.preventDefault();
+  setLoading(true);
 
-    const startingTimeMs = new Date(formData.startingTime).getTime();
+  // Validation
+  if (!formData.startingTime) {
+    toast.error("Please select starting time");
+    setLoading(false);
+    return;
+  }
 
-    const submitData = {
-      startingTime: Math.floor(startingTimeMs / 1000),
-      stakingDuration: parseInt(formData.stakingDuration) * 60,
-      claimDuration: parseInt(formData.claimDuration) * 60,
-      tokenAddress: '0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B',
-      // formData.tokenAddress,
-    };
+  if (!formData.stakingDuration || isNaN(formData.stakingDuration) || parseInt(formData.stakingDuration) <= 0) {
+    toast.error("Please enter a valid staking duration (in minutes)");
+    setLoading(false);
+    return;
+  }
 
-    try {
-      const response = await FireApi("admin/create-cycle", "POST", submitData);
+  if (!formData.claimDuration || isNaN(formData.claimDuration) || parseInt(formData.claimDuration) <= 0) {
+    toast.error("Please enter a valid claim duration (in minutes)");
+    setLoading(false);
+    return;
+  }
 
-      if (response?.success || response?.ok) {
-        toast.success(response?.message || 'successfull')
-        setLoading(false)
 
-      } else {
-        toast.error(response?.message || 'failed')
-        setLoading(false)
-        setFormData({
-          startingTime: '',
-          stakingDuration: '',
-          claimDuration: '',
-          tokenAddress: ''
-        })
-      }
-    } catch (error) {
-      setLoading(false)
-      console.error("API call failed:", error);
-    }
 
-    console.log("Form Data:", submitData);
+  const startingTimeMs = new Date(formData.startingTime).getTime();
+
+  const submitData = {
+    startingTime: Math.floor(startingTimeMs / 1000),
+    stakingDuration: parseInt(formData.stakingDuration) * 60,
+    claimDuration: parseInt(formData.claimDuration) * 60,
+    tokenAddress: formData.tokenAddress || '0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B',
   };
+
+  try {
+    const response = await FireApi("admin/create-cycle", "POST", submitData);
+
+    if (response?.success || response?.ok) {
+      toast.success(response?.message || 'Cycle created successfully');
+      setFormData({
+        startingTime: '',
+        stakingDuration: '',
+        claimDuration: '',
+        tokenAddress: ''
+      });
+    } else {
+      toast.error(response?.message || 'Failed to create cycle');
+    }
+  } catch (error) {
+    toast.error("API call failed");
+    console.error("API call failed:", error);
+  } finally {
+    setLoading(false);
+  }
+
+  console.log("Form Data:", submitData);
+};
 
 
   return (
