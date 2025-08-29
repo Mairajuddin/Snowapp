@@ -142,6 +142,7 @@ const MainPage = () => {
     console.log(stakeRes, 'KJSDKJHSSDHKJDSSSJKS')
     if (stakeRes.success) {
       setCurrentlyStakeAmount(stakeAmount)
+      console.log(stakeRes.data,'hello check my mc')
       setUserStakeInfo(stakeRes.data);
     } else {
       console.error("Failed to fetch stake info:", stakeRes.message);

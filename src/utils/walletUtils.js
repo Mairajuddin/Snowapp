@@ -119,6 +119,8 @@ export const stakeTokenFunc = async (amount) => {
   // const stakeAmountWei = amount;
   const stakeAmountWei = ethers.parseUnits(amount.toString(), decimals);
 const balance = await token.balanceOf(Wallet_address);
+console.log(Wallet_address, balance,TOKEN_ADDRESS,'Might Check helo  helo');
+
     console.log("User balance:", ethers.formatUnits(balance, decimals));
 
     if (balance < stakeAmountWei)
