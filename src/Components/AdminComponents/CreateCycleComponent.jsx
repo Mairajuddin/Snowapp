@@ -146,8 +146,11 @@ import {
 } from '@mui/icons-material';
 import { FireApi } from '../../hooks/useRequest';
 import { toast } from 'react-toastify';
+import { CircularProgress } from '@mui/material';
 
 const CreateCycleComponent = () => {
+  const [loading, setLoading] = useState(false)
+  
   const [formData, setFormData] = useState({
     startingTime: '',
     stakingDuration: '',
@@ -164,36 +167,28 @@ const CreateCycleComponent = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setLoading(true)
 
     const startingTimeMs = new Date(formData.startingTime).getTime();
 
-    // const submitData = {
-    //   startingTime: Math.floor(startingTimeMs / 1000),
-    //   stakingDuration: parseInt(formData.stakingDuration),
-    //   claimDuration: parseInt(formData.claimDuration),
-    //   tokenAddress: formData.tokenAddress,
-    // };
-     const submitData = {
-    startingTime: Math.floor(startingTimeMs / 1000), 
-    stakingDuration: parseInt(formData.stakingDuration) * 60,  
-claimDuration: parseInt(formData.claimDuration) * 60,
-tokenAddress: '0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B',
-// formData.tokenAddress,
-  };
+    const submitData = {
+      startingTime: Math.floor(startingTimeMs / 1000),
+      stakingDuration: parseInt(formData.stakingDuration) * 60,
+      claimDuration: parseInt(formData.claimDuration) * 60,
+      tokenAddress: '0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B',
+      // formData.tokenAddress,
+    };
 
     try {
       const response = await FireApi("admin/create-cycle", "POST", submitData);
 
       if (response?.success || response?.ok) {
         toast.success(response?.message || 'successfull')
-        // setFormData({
-        //   startingTime: '',
-        //   stakingDuration: '',
-        //   claimDuration: '',
-        //   tokenAddress: ''
-        // })
+        setLoading(false)
+
       } else {
         toast.error(response?.message || 'failed')
+        setLoading(false)
         setFormData({
           startingTime: '',
           stakingDuration: '',
@@ -202,6 +197,7 @@ tokenAddress: '0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B',
         })
       }
     } catch (error) {
+      setLoading(false)
       console.error("API call failed:", error);
     }
 
@@ -308,39 +304,39 @@ tokenAddress: '0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B',
                       }}
                     /> */}
                     <TextField
-  fullWidth
-  label="Staking Duration (minutes)"
-  type="number"   // 👈 ab number input hoga
-  value={formData.stakingDuration}
-  onChange={handleInputChange("stakingDuration")}
-  InputProps={{
-    startAdornment: (
-      <InputAdornment position="start">
-        <Schedule sx={{ color: "#64748b" }} />
-      </InputAdornment>
-    ),
-    sx: {
-      color: "#fff",
-      "& .MuiOutlinedInput-notchedOutline": {
-        borderColor: "rgba(255, 255, 255, 0.23)",
-      },
-      "&:hover .MuiOutlinedInput-notchedOutline": {
-        borderColor: "rgba(255, 255, 255, 0.4)",
-      },
-      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-        borderColor: "#3b82f6",
-      },
-    },
-  }}
-  InputLabelProps={{
-    sx: { color: "rgba(255, 255, 255, 0.7)" },
-    shrink: true,
-  }}
-  helperText="Enter staking duration in minutes"   // 👈 updated text
-  FormHelperTextProps={{
-    sx: { color: "rgba(255, 255, 255, 0.5)" },
-  }}
-/>
+                      fullWidth
+                      label="Staking Duration (minutes)"
+                      type="number"   // 👈 ab number input hoga
+                      value={formData.stakingDuration}
+                      onChange={handleInputChange("stakingDuration")}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Schedule sx={{ color: "#64748b" }} />
+                          </InputAdornment>
+                        ),
+                        sx: {
+                          color: "#fff",
+                          "& .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "rgba(255, 255, 255, 0.23)",
+                          },
+                          "&:hover .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "rgba(255, 255, 255, 0.4)",
+                          },
+                          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "#3b82f6",
+                          },
+                        },
+                      }}
+                      InputLabelProps={{
+                        sx: { color: "rgba(255, 255, 255, 0.7)" },
+                        shrink: true,
+                      }}
+                      helperText="Enter staking duration in minutes"   // 👈 updated text
+                      FormHelperTextProps={{
+                        sx: { color: "rgba(255, 255, 255, 0.5)" },
+                      }}
+                    />
 
                   </Grid>
 
@@ -382,39 +378,39 @@ tokenAddress: '0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B',
                       }}
                     /> */}
                     <TextField
-  fullWidth
-  label="Claim Duration (mins)"
-  type="number"
-  value={formData.claimDuration}
-  onChange={handleInputChange('claimDuration')}
-  InputProps={{
-    startAdornment: (
-      <InputAdornment position="start">
-        <Schedule sx={{ color: '#64748b' }} />
-      </InputAdornment>
-    ),
-    sx: {
-      color: '#fff',
-      '& .MuiOutlinedInput-notchedOutline': {
-        borderColor: 'rgba(255, 255, 255, 0.23)',
-      },
-      '&:hover .MuiOutlinedInput-notchedOutline': {
-        borderColor: 'rgba(255, 255, 255, 0.4)',
-      },
-      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-        borderColor: '#3b82f6',
-      },
-    }
-  }}
-  InputLabelProps={{
-    sx: { color: 'rgba(255, 255, 255, 0.7)' },
-    shrink: true
-  }}
-  helperText="Enter duration in minutes"
-  FormHelperTextProps={{
-    sx: { color: 'rgba(255, 255, 255, 0.5)' }
-  }}
-/>
+                      fullWidth
+                      label="Claim Duration (mins)"
+                      type="number"
+                      value={formData.claimDuration}
+                      onChange={handleInputChange('claimDuration')}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Schedule sx={{ color: '#64748b' }} />
+                          </InputAdornment>
+                        ),
+                        sx: {
+                          color: '#fff',
+                          '& .MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'rgba(255, 255, 255, 0.23)',
+                          },
+                          '&:hover .MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'rgba(255, 255, 255, 0.4)',
+                          },
+                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                            borderColor: '#3b82f6',
+                          },
+                        }
+                      }}
+                      InputLabelProps={{
+                        sx: { color: 'rgba(255, 255, 255, 0.7)' },
+                        shrink: true
+                      }}
+                      helperText="Enter duration in minutes"
+                      FormHelperTextProps={{
+                        sx: { color: 'rgba(255, 255, 255, 0.5)' }
+                      }}
+                    />
 
                   </Grid>
 
@@ -461,10 +457,11 @@ tokenAddress: '0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B',
                   <Grid item xs={12}>
                     <Box sx={{ mt: 3, textAlign: 'center' }}>
 
-                      <Button
+                      {/* <Button
                         type="submit"
                         variant="contained"
                         size="small"
+                        disabled={loading}
                         startIcon={<Send />}
                         sx={{
                           background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
@@ -486,7 +483,41 @@ tokenAddress: '0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B',
                         }}
                       >
                         Create Staking Cycle
+                      </Button> */}
+                      <Button
+                        type="submit"
+                        variant="contained"
+                        size="small"
+                        disabled={loading}
+                        startIcon={
+                          loading ? (
+                            <CircularProgress size={18} sx={{ color: "white" }} />
+                          ) : (
+                            <Send />
+                          )
+                        }
+                        sx={{
+                          background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
+                          color: "white",
+                          py: { xs: 0.4, sm: 0.6, md: 0.8 },
+                          px: { xs: 1.5, sm: 2, md: 2.5 },
+                          borderRadius: "10px",
+                          fontSize: { xs: "0.75rem", sm: "0.85rem", md: "0.95rem" },
+                          fontWeight: 600,
+                          textTransform: "none",
+                          boxShadow: "0 4px 12px rgba(59, 130, 246, 0.4)",
+                          "&:hover": {
+                            background:
+                              "linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)",
+                            boxShadow: "0 6px 16px rgba(59, 130, 246, 0.6)",
+                            transform: "translateY(-1px)",
+                          },
+                          transition: "all 0.2s ease-in-out",
+                        }}
+                      >
+                        {loading ? "Processing..." : "Create Staking Cycle"}
                       </Button>
+
 
                     </Box>
                   </Grid>

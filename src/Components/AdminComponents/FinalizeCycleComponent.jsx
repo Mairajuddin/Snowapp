@@ -16,10 +16,13 @@ import {
   Inventory,
   RocketLaunch
 } from '@mui/icons-material';
+import { CircularProgress } from '@mui/material';
+
 import { FireApi } from '../../hooks/useRequest';
 import { toast } from 'react-toastify';
 
 const FinalizeCycleComponent = () => {
+  const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     symbol: '',
@@ -36,6 +39,7 @@ const FinalizeCycleComponent = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setLoading(true)
 
     const submitData = {
       name: formData.name,
@@ -49,20 +53,23 @@ const FinalizeCycleComponent = () => {
 
       if (response?.success || response?.ok) {
         toast.success(response?.message || 'successfull')
+        setLoading(false)
         setFormData({
           name: '',
           symbol: '',
-          
+
         });
       } else {
         toast.error(response?.message || 'failed')
+        setLoading(false)
         setFormData({
           name: '',
           symbol: '',
-          
+
         });
       }
     } catch (error) {
+      setLoading(false)
       console.error("API call failed:", error);
     }
 
@@ -215,8 +222,16 @@ const FinalizeCycleComponent = () => {
                         type="submit"
                         variant="contained"
                         size="small"
-                        startIcon={<RocketLaunch />}
+
                         fullWidth={false}
+                        disabled={loading}
+                        startIcon={
+                          loading ? (
+                            <CircularProgress size={18} sx={{ color: "white" }} />
+                          ) : (
+                            <RocketLaunch />
+                          )
+                        }
                         sx={{
                           background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
                           color: 'white',
@@ -235,7 +250,8 @@ const FinalizeCycleComponent = () => {
                           transition: 'all 0.2s ease-in-out'
                         }}
                       >
-                        Finalize Cycle
+                        {loading ? "Processing..." : "Finalize Cycle"}
+
                       </Button>
 
                     </Box>

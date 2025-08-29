@@ -13,10 +13,11 @@ import CountdownTimer from '../Components/CountdownTimer';
 
 const MainPage = () => {
   const [currentPhase, setCurrentPhase] = useState('stake');
-  const [isWalletConnected, setIsWalletConnected] = useState(false);
+    const [isWalletConnected, setIsWalletConnected] = useState(false);
   const [walletAddress, setWalletAddress] = useState('');
   const [countdown, setCountdown] = useState({ days: 27, hours: 14, minutes: 36, seconds: 9 });
   const [stakeAmount, setStakeAmount] = useState('');
+  const [CurrentlyStakeAmount,setCurrentlyStakeAmount]=useState('')
   const [snowBalance, setSnowBalance] = useState('1,234.56');
   const [previousBalance, setPreviousBalance] = useState('800.12');
   const [toasts, setToasts] = useState([]);
@@ -118,38 +119,78 @@ const MainPage = () => {
 
 
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCountdown(prev => {
-        let { days, hours, minutes, seconds } = prev;
-        if (seconds > 0) seconds--;
-        else if (minutes > 0) { minutes--; seconds = 59; }
-        else if (hours > 0) { hours--; minutes = 59; seconds = 59; }
-        else if (days > 0) { days--; hours = 23; minutes = 59; seconds = 59; }
-        return { days, hours, minutes, seconds };
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
+  // useEffect(() => {
+  //   const timer = setInterval(() => {
+  //     setCountdown(prev => {
+  //       let { days, hours, minutes, seconds } = prev;
+  //       if (seconds > 0) seconds--;
+  //       else if (minutes > 0) { minutes--; seconds = 59; }
+  //       else if (hours > 0) { hours--; minutes = 59; seconds = 59; }
+  //       else if (days > 0) { days--; hours = 23; minutes = 59; seconds = 59; }
+  //       return { days, hours, minutes, seconds };
+  //     });
+  //   }, 1000);
+  //   return () => clearInterval(timer);
+  // }, []);
 
   const handleStake = async () => {
     if (!stakeAmount || parseFloat(stakeAmount) <= 0 || info?.phase !== 'Staking') return;
     handleUpdatePhase()
     await stakeTokenFunc(stakeAmount, info?.cycle)
 
+     const stakeRes = await getUserStakes();
+    console.log(stakeRes, 'KJSDKJHSSDHKJDSSSJKS')
+    if (stakeRes.success) {
+      setCurrentlyStakeAmount(stakeAmount)
+      setUserStakeInfo(stakeRes.data);
+    } else {
+      console.error("Failed to fetch stake info:", stakeRes.message);
+    }
+
+
+
   };
 
   // handleClaim
   const handleClaim = async () => {
-    handleUpdatePhase()
-    const res = await claimTokens();
-    if (res.success) {
-      console.log(res, 'check my data here ebeta')
+  try {
+          setCurrentlyStakeAmount('')
 
-    } else {
+    await handleUpdatePhase(); 
+
+    const res = await claimTokens();
+    if (!res.success) {
       alert(`Error: ${res.message}`);
+      return;
     }
-  };
+
+    console.log("Claim response:", res);
+
+    const stakeRes = await getUserStakes();
+    console.log("User stake info:", stakeRes);
+
+    if (stakeRes.success) {
+      setUserStakeInfo(stakeRes.data);
+    } else {
+      console.error("Failed to fetch stake info:", stakeRes.message);
+    }
+  } catch (error) {
+    console.error("Claim failed:", error);
+    alert("Something went wrong while claiming tokens");
+  }
+};
+
+  // const handleClaim = async () => {
+  //   handleUpdatePhase()
+  //   const res = await claimTokens();
+  //   if (res.success) {
+  //     console.log(res, 'check my data here ebeta')
+
+  //   } else {
+  //     alert(`Error: ${res.message}`);
+  //   }
+    
+  // };
 
 
 
@@ -238,12 +279,7 @@ const MainPage = () => {
                 />
               </Box>
 
-              {/* <Typography
-            variant="h3"
-            sx={{ color: '#E2E8F0', fontFamily: 'monospace', fontWeight: 700, letterSpacing: '3px', mb: 0.5 }}
-          >
-            {formatNumber(countdown.days)}:{formatNumber(countdown.hours)}:{formatNumber(countdown.minutes)}:{formatNumber(countdown.seconds)}
-          </Typography> */}
+             
               {/* <CountdownTimer targetTimestamp={info?.startTimestamp} label='Start Staking' /> */}
               <CountdownTimer targetTimestamp={info?.stakingEnd} label='Staking End' />
               <CountdownTimer targetTimestamp={info?.claimEnd} label='Claim End' />
@@ -308,7 +344,7 @@ const MainPage = () => {
                     {/* Currently Staked Amount */}
                     <Box mt={2}>
                       <Typography variant="body2" sx={{ color: '#94A3B8' }}>Currently Staked</Typography>
-                      <Typography sx={{ fontWeight: 500, fontSize: '14px' }}>{ stakeAmount ||  0} CYCLX</Typography>
+                      <Typography sx={{ fontWeight: 500, fontSize: '14px' }}>{ CurrentlyStakeAmount ||  0} CYCLX</Typography>
                     </Box>
 
                     {/* Active Version */}
