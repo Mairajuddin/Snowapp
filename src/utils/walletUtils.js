@@ -78,7 +78,7 @@ export const stakeTokenFunc = async (amount) => {
   const GANACHE_PARAMS = {
     chainId: "0x539", 
     chainName: "Ganache (Dev)",
-    rpcUrls: ["http://64.23.166.88:8545/"],
+    rpcUrls: ["https://7ec05afdbdef.ngrok-free.app/"],
     nativeCurrency: {
       name: "Ethereum",
       symbol: "ETH",
