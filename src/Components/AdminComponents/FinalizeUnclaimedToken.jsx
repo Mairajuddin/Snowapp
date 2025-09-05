@@ -159,7 +159,7 @@ const FinalizeUnclaimedTToken = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     const submitData = {
-      recipient: formData.recipient
+      // recipient: formData.recipient
     };
 
     try {

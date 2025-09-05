@@ -269,7 +269,7 @@ const MainPage = () => {
               {/* Current Phase Header */}
               <Box display="flex" justifyContent="center" gap={2} mb={2} alignItems="center" flexWrap="wrap">
                 <Chip
-                  label="CYCLXv3"
+                  label={`CYCLX  v${info?.cycle}`}
                   // label="CYCLX"
                   sx={{ bgcolor: 'transparent', color: '#94A3B8', borderColor: '#94A3B8' }}
                   variant="outlined"
@@ -351,7 +351,7 @@ const MainPage = () => {
                     {/* Active Version */}
                     <Box mt={2}>
                       <Typography variant="body2" sx={{ color: '#94A3B8' }}>Active Version</Typography>
-                      <Typography sx={{ fontWeight: 500, fontSize: '14px' }}>{"CYCLXv3"}{"   "}{shortenAddress(info?.previoustoken)}</Typography>
+                      <Typography sx={{ fontWeight: 500, fontSize: '14px' }}>{`CYCLX  v${info?.cycle}`}</Typography>
                     </Box>
                   </CardContent>
                 </Card>
@@ -366,7 +366,7 @@ const MainPage = () => {
                       </Typography>
                     </Tooltip>
 
-                    <Typography variant="body2" sx={{ color: '#94A3B8' }}>CYCLXv2</Typography>
+                    <Typography variant="body2" sx={{ color: '#94A3B8' }}>{`CYCLX  v${info?.cycle>1?info?.cycle-1:""}`}</Typography>
                   </CardContent>
                 </Card>
               </Grid>

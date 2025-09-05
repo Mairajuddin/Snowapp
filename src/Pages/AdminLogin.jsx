@@ -2,19 +2,41 @@
 import React, { useState } from 'react';
 import { User, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router';
+import { toast } from 'react-toastify';
+import { FireApi } from '../hooks/useRequest';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
 
-  const handleSubmit = (e) => {
+  const  adminCred={
+    email:"admin@gmail.com",
+    password:'Admin@123'
+  }
+   const handleSubmit = async(e) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log('Login attempt:', { email, password, rememberMe });
-    navigate("/admin");
+    try {
+      const payload={
+        email:email,
+        password:password
+      }
+          const response=await FireApi('admin/login','POST',payload)
+    if(response?.ok || response?.success){
+    localStorage.setItem('X!@er88',true)
+    toast.success(response?.message||'Login Successful')
+      navigate("/admin");
+    
+    }else{
+      toast.error(response?.message||'Something went wrong')
+    }
+    } catch (error) {
+      console.log(error)
+    }
+
   };
 
+  
   const styles = {
     container: {
       minHeight: '100vh',
@@ -209,7 +231,7 @@ export default function AdminLogin() {
             </div>
             
             <div style={styles.checkboxContainer}>
-              <input
+              {/* <input
                 type="checkbox"
                 id="remember"
                 checked={rememberMe}
@@ -218,7 +240,7 @@ export default function AdminLogin() {
               />
               <label htmlFor="remember" style={styles.checkboxLabel}>
                 Remember me
-              </label>
+              </label> */}
             </div>
             
             <button
@@ -235,7 +257,7 @@ export default function AdminLogin() {
             </button>
             
             <div style={styles.linksContainer}>
-              <a 
+              {/* <a 
                 href="#" 
                 style={{
                   ...styles.link,
@@ -246,7 +268,7 @@ export default function AdminLogin() {
                 onClick={(e) => e.preventDefault()}
               >
                 Forgot your password?
-              </a>
+              </a> */}
             </div>
           </div>
         </div>

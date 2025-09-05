@@ -58,12 +58,12 @@ const AdminHomePage = () => {
       icon: <Timeline />,
       description: 'Close active cycles and track reward history'
     },
-    // { 
-    //   key: 'unClaimedTOkens', 
-    //   label: 'Finalize Unclaimed Tokens', 
-    //   icon: <Settings />,
-    //   description: 'View and finalize unclaimed staking rewards'
-    // }
+    { 
+      key: 'unClaimedTOkens', 
+      label: 'Finalize Unclaimed Tokens', 
+      icon: <Settings />,
+      description: 'View and finalize unclaimed staking rewards'
+    }
   ];
 
   const handleDrawerToggle = () => {
@@ -75,7 +75,7 @@ const AdminHomePage = () => {
       case 'adminhome':return <AdminHome/>;
       case 'createCycle': return <CreateCycleComponent />;
       case 'finalizeCycle': return <FinalizeCycleComponent />;
-      // case 'unClaimedTOkens': return <FinalizeUnclaimedTToken />;
+      case 'unClaimedTOkens': return <FinalizeUnclaimedTToken />;
       default: return <AdminHome />;
     }
   };
