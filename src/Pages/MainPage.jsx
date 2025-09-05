@@ -330,7 +330,7 @@ const MainPage = () => {
                   <CardContent>
                     {/* Title & Refresh Button */}
                     <Box display="flex" justifyContent="space-between" mb={1}>
-                      <Typography variant="body2" sx={{ color: '#94A3B8' }}>Your CYCLXv3 Balance</Typography>
+                      <Typography variant="body2" sx={{ color: '#94A3B8' }}>Your {`CYCLX  v${info?.cycle}`} Balance</Typography>
                       <IconButton sx={{ color: '#7DC4FF', cursor: 'pointer' }} onClick={handleRefereshStake} >
                         <RefreshCw size={16} />
                       </IconButton>
