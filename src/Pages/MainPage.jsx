@@ -13,11 +13,11 @@ import CountdownTimer from '../Components/CountdownTimer';
 
 const MainPage = () => {
   const [currentPhase, setCurrentPhase] = useState('stake');
-    const [isWalletConnected, setIsWalletConnected] = useState(false);
+  const [isWalletConnected, setIsWalletConnected] = useState(false);
   const [walletAddress, setWalletAddress] = useState('');
   const [countdown, setCountdown] = useState({ days: 27, hours: 14, minutes: 36, seconds: 9 });
   const [stakeAmount, setStakeAmount] = useState('');
-  const [CurrentlyStakeAmount,setCurrentlyStakeAmount]=useState('')
+  const [CurrentlyStakeAmount, setCurrentlyStakeAmount] = useState('')
   const [snowBalance, setSnowBalance] = useState('1,234.56');
   const [previousBalance, setPreviousBalance] = useState('800.12');
   const [toasts, setToasts] = useState([]);
@@ -138,11 +138,11 @@ const MainPage = () => {
     handleUpdatePhase()
     await stakeTokenFunc(stakeAmount, info?.cycle)
 
-     const stakeRes = await getUserStakes();
+    const stakeRes = await getUserStakes();
     console.log(stakeRes, 'KJSDKJHSSDHKJDSSSJKS')
     if (stakeRes.success) {
       setCurrentlyStakeAmount(stakeAmount)
-      console.log(stakeRes.data,'hello check my mc')
+      console.log(stakeRes.data, 'hello check my mc')
       setUserStakeInfo(stakeRes.data);
     } else {
       console.error("Failed to fetch stake info:", stakeRes.message);
@@ -154,32 +154,32 @@ const MainPage = () => {
 
   // handleClaim
   const handleClaim = async () => {
-  try {
-          setCurrentlyStakeAmount('')
+    try {
+      setCurrentlyStakeAmount('')
 
-    await handleUpdatePhase(); 
+      await handleUpdatePhase();
 
-    const res = await claimTokens();
-    if (!res.success) {
-      alert(`Error: ${res.message}`);
-      return;
+      const res = await claimTokens();
+      if (!res.success) {
+        alert(`Error: ${res.message}`);
+        return;
+      }
+
+      console.log("Claim response:", res);
+
+      const stakeRes = await getUserStakes();
+      console.log("User stake info:", stakeRes);
+
+      if (stakeRes.success) {
+        setUserStakeInfo(stakeRes.data);
+      } else {
+        console.error("Failed to fetch stake info:", stakeRes.message);
+      }
+    } catch (error) {
+      console.error("Claim failed:", error);
+      alert("Something went wrong while claiming tokens");
     }
-
-    console.log("Claim response:", res);
-
-    const stakeRes = await getUserStakes();
-    console.log("User stake info:", stakeRes);
-
-    if (stakeRes.success) {
-      setUserStakeInfo(stakeRes.data);
-    } else {
-      console.error("Failed to fetch stake info:", stakeRes.message);
-    }
-  } catch (error) {
-    console.error("Claim failed:", error);
-    alert("Something went wrong while claiming tokens");
-  }
-};
+  };
 
   // const handleClaim = async () => {
   //   handleUpdatePhase()
@@ -190,7 +190,7 @@ const MainPage = () => {
   //   } else {
   //     alert(`Error: ${res.message}`);
   //   }
-    
+
   // };
 
 
@@ -275,12 +275,13 @@ const MainPage = () => {
                   variant="outlined"
                 />
                 <Chip
-                  label={`${currentPhase.charAt(0).toUpperCase() + currentPhase.slice(1)} Phase`}
+                  // label={`${currentPhase.charAt(0).toUpperCase() + currentPhase.slice(1)} Phase`}
+                  label={`${info?.phase} Phase`}
                   sx={{ bgcolor: getPhaseColor(), color: '#0B1523', fontWeight: 600 }}
                 />
               </Box>
 
-             
+
               {/* <CountdownTimer targetTimestamp={info?.startTimestamp} label='Start Staking' /> */}
               <CountdownTimer targetTimestamp={info?.stakingEnd} label='Staking End' />
               <CountdownTimer targetTimestamp={info?.claimEnd} label='Claim End' />
@@ -338,14 +339,14 @@ const MainPage = () => {
                     {/* Balance */}
                     {/* userStakeInfo */}
                     {/* <Typography variant="h5" sx={{ fontWeight: 600 }}>{ info?.totalStaked}</Typography> */}
-                    <Typography variant="h5" sx={{ fontWeight: 600 }}>{ userStakeInfo}</Typography>
+                    <Typography variant="h5" sx={{ fontWeight: 600 }}>{userStakeInfo}</Typography>
 
                     <Typography variant="body2" sx={{ color: '#94A3B8' }}>CYCLX</Typography>
 
                     {/* Currently Staked Amount */}
                     <Box mt={2}>
                       <Typography variant="body2" sx={{ color: '#94A3B8' }}>Currently Staked</Typography>
-                      <Typography sx={{ fontWeight: 500, fontSize: '14px' }}>{ CurrentlyStakeAmount ||  0} CYCLX</Typography>
+                      <Typography sx={{ fontWeight: 500, fontSize: '14px' }}>{CurrentlyStakeAmount || 0} CYCLX</Typography>
                     </Box>
 
                     {/* Active Version */}
@@ -366,7 +367,7 @@ const MainPage = () => {
                       </Typography>
                     </Tooltip>
 
-                    <Typography variant="body2" sx={{ color: '#94A3B8' }}>{`CYCLX  v${info?.cycle>1?info?.cycle-1:""}`}</Typography>
+                    <Typography variant="body2" sx={{ color: '#94A3B8' }}>{`CYCLX  v${info?.cycle > 1 ? info?.cycle - 1 : ""}`}</Typography>
                   </CardContent>
                 </Card>
               </Grid>
@@ -410,21 +411,40 @@ const MainPage = () => {
                           </Button>
                         </>
                       ) : info?.phase === 'Claiming' ? (   // 👈 yahan pe ? lagana hai
-                        <Button
-                          fullWidth
-                          variant="contained"
-                          sx={{
-                            mt: 2,
-                            bgcolor: '#00C48C',
-                            color: '#0B1523',
-                            fontWeight: 600,
-                            borderRadius: '6px',
-                            '&:hover': { bgcolor: '#00b37d' },
-                          }}
-                          onClick={handleClaim}
-                        >
-                          Claim CYCLX
-                        </Button>
+                        // <Button
+                        //   fullWidth
+                        //   variant="contained"
+                        //   sx={{
+                        //     mt: 2,
+                        //     bgcolor: '#00C48C',
+                        //     color: '#0B1523',
+                        //     fontWeight: 600,
+                        //     borderRadius: '6px',
+                        //     '&:hover': { bgcolor: '#00b37d' },
+                        //   }}
+                        //   onClick={handleClaim}
+                        // >
+                        //   Claim CYCLX
+                        // </Button>
+                        userStakeInfo > 0 ? (
+                          <Button
+                            fullWidth
+                            variant="contained"
+                            sx={{
+                              mt: 2,
+                              bgcolor: '#00C48C',
+                              color: '#0B1523',
+                              fontWeight: 600,
+                              borderRadius: '6px',
+                              '&:hover': { bgcolor: '#00b37d' },
+                            }}
+                            onClick={handleClaim}
+                          >
+                            Claim CYCLX
+                          </Button>
+                        ) : (
+                          <Typography>No Stake Token</Typography>
+                        )
                       ) : (
                         <Button
                           fullWidth
