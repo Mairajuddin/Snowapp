@@ -18,7 +18,7 @@ const MainPage = () => {
   const [countdown, setCountdown] = useState({ days: 27, hours: 14, minutes: 36, seconds: 9 });
   const [stakeAmount, setStakeAmount] = useState('');
   const [CurrentlyStakeAmount, setCurrentlyStakeAmount] = useState('')
-  const [snowBalance, setSnowBalance] = useState('1,234.56');
+  const [userBalance, setUserBalance] = useState();
   const [previousBalance, setPreviousBalance] = useState('800.12');
   const [toasts, setToasts] = useState([]);
   const [info, setInfo] = useState()
@@ -49,7 +49,9 @@ const MainPage = () => {
     try {
       addToast('pending', 'Connecting wallet...');
       const result = await connectWalletFunc();
-
+      if (result && result.balance) {
+        setUserBalance(result.balance)
+      }
       if (result && result.address) {
         setIsWalletConnected(true);
         setWalletAddress(result.address);
@@ -77,6 +79,7 @@ const MainPage = () => {
 
       if (response?.success || response?.ok) {
         setInfo(response?.data);
+        console.log(response?.data, 'XXXXXXXXXXXXXXXXXX')
 
         // if (response?.data?.cycle) {
         //   const stakeRes = await getUserStakes(response.data.cycle);
@@ -99,10 +102,14 @@ const MainPage = () => {
 
 
   const handleRefereshStake = async () => {
-    const stakeRes = await getUserStakes();
+    // const stakeRes = await getUserStakes();
+    const tokenAddress = info?.stakedToken
+    console.log(tokenAddress, 'sakjdaskjdsahk')
+    const stakeRes = await getUserStakes(tokenAddress);
     console.log(stakeRes, 'KJSDKJHSSDHKJDSSSJKS')
     if (stakeRes.success) {
-      setUserStakeInfo(stakeRes.data);
+      setUserStakeInfo(stakeRes.responseData);
+      setUserBalance(stakeRes?.responseData?.userBalance)
     } else {
       console.error("Failed to fetch stake info:", stakeRes.message);
     }
@@ -137,13 +144,15 @@ const MainPage = () => {
     if (!stakeAmount || parseFloat(stakeAmount) <= 0 || info?.phase !== 'Staking') return;
     handleUpdatePhase()
     await stakeTokenFunc(stakeAmount, info?.cycle)
-
-    const stakeRes = await getUserStakes();
+    const tokenAddress = info?.stakedToken
+    const stakeRes = await getUserStakes(tokenAddress);
     console.log(stakeRes, 'KJSDKJHSSDHKJDSSSJKS')
     if (stakeRes.success) {
       setCurrentlyStakeAmount(stakeAmount)
-      console.log(stakeRes.data, 'hello check my mc')
-      setUserStakeInfo(stakeRes.data);
+      console.log(stakeRes.responseData, 'hello check my mc')
+      setUserStakeInfo(stakeRes.responseData);
+      setUserBalance(stakeRes?.responseData?.userBalance)
+
     } else {
       console.error("Failed to fetch stake info:", stakeRes.message);
     }
@@ -167,11 +176,15 @@ const MainPage = () => {
 
       console.log("Claim response:", res);
 
-      const stakeRes = await getUserStakes();
+      // const stakeRes = await getUserStakes();
+      const tokenAddress = info?.stakedToken
+      const stakeRes = await getUserStakes(tokenAddress);
       console.log("User stake info:", stakeRes);
 
       if (stakeRes.success) {
-        setUserStakeInfo(stakeRes.data);
+        setUserStakeInfo(stakeRes.responseData);
+        setUserBalance(stakeRes?.responseData?.userBalance)
+
       } else {
         console.error("Failed to fetch stake info:", stakeRes.message);
       }
@@ -339,7 +352,7 @@ const MainPage = () => {
                     {/* Balance */}
                     {/* userStakeInfo */}
                     {/* <Typography variant="h5" sx={{ fontWeight: 600 }}>{ info?.totalStaked}</Typography> */}
-                    <Typography variant="h5" sx={{ fontWeight: 600 }}>{userStakeInfo}</Typography>
+                    <Typography variant="h5" sx={{ fontWeight: 600 }}>{userStakeInfo?.userStakes}</Typography>
 
                     <Typography variant="body2" sx={{ color: '#94A3B8' }}>CYCLX</Typography>
 
@@ -348,11 +361,17 @@ const MainPage = () => {
                       <Typography variant="body2" sx={{ color: '#94A3B8' }}>Currently Staked</Typography>
                       <Typography sx={{ fontWeight: 500, fontSize: '14px' }}>{CurrentlyStakeAmount || 0} CYCLX</Typography>
                     </Box>
-
                     {/* Active Version */}
                     <Box mt={2}>
                       <Typography variant="body2" sx={{ color: '#94A3B8' }}>Active Version</Typography>
                       <Typography sx={{ fontWeight: 500, fontSize: '14px' }}>{`CYCLX  v${info?.cycle}`}</Typography>
+                    </Box>
+                    <Box mt={2}>
+                      <Typography variant="body2" sx={{ color: '#94A3B8' }}>User Balance</Typography>
+                      <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                        {String(userStakeInfo?.userBalance ?? userBalance ?? "0").slice(0, 5)}
+                      </Typography>
+
                     </Box>
                   </CardContent>
                 </Card>
@@ -426,7 +445,7 @@ const MainPage = () => {
                         // >
                         //   Claim CYCLX
                         // </Button>
-                        userStakeInfo > 0 ? (
+                        userStakeInfo?.userStakes > 0 ? (
                           <Button
                             fullWidth
                             variant="contained"
