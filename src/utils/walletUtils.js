@@ -19,21 +19,27 @@ export const connectWalletFunc = async () => {
   }
 
   try {
+
     const provider = new ethers.BrowserProvider(window.ethereum);
     localStorage.setItem('providerCheck', provider)
     await provider.send('eth_requestAccounts', []);
     const signer = await provider.getSigner();
-
-    const token = new ethers.Contract("0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B", ERC20ABI.abi, provider);
+    const tokenAddress=  localStorage.getItem("XXssf23TAddress")
+    const tokenFinalAddress=tokenAddress ||"0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B"
+    console.log(tokenFinalAddress,'kjhjhdjdjhdkjhdkjhd')
+    const token = new ethers.Contract(tokenFinalAddress, ERC20ABI.abi, signer);
     console.log(token, 'token check kjsakjsh')
-    const rawBalance = await token.balanceOf(Wallet_address);
+    const address = await signer.getAddress();
+    const rawBalance = await token.balanceOf(address);
+
+    // const rawBalance = await token.balanceOf(Wallet_address);
     const decimals = await token.decimals();
 
     const balance = ethers.formatUnits(rawBalance, decimals);
-    console.log(balance, 'asksjdlkjslkjlksd')
 
 
-    const address = await signer.getAddress();
+
+    // const address = await signer.getAddress();
     localStorage.setItem('xsigner1234', JSON.stringify(signer))
 
     const message = `Log into CyclX - ${new Date()
@@ -44,7 +50,7 @@ export const connectWalletFunc = async () => {
     localStorage.setItem('session_signature', signature);
     localStorage.setItem('wallet_address', address);
 
-    return { address, signature,balance };
+    return { address, signature, balance };
   } catch (err) {
     alert('❌ Error: ' + err.message);
     return null;
@@ -58,7 +64,9 @@ export const disconnectWalletFunc = () => {
 };
 
 const STAKING_ADDRESS = "0xCfEB869F69431e42cdB54A4F4f105C19C080A601"; //stakingmanager network
-const TOKEN_ADDRESS = "0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B"; //Token address
+    const ChecktokenAddress=  localStorage.getItem("XXssf23TAddress")
+    const TestTOKEN_ADDRESS=ChecktokenAddress ||"0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B"
+const TOKEN_ADDRESS = TestTOKEN_ADDRESS
 const Wallet_address = localStorage.getItem("wallet_address")
 
 
@@ -87,7 +95,7 @@ export const stakeTokenFunc = async (amount) => {
   const GANACHE_PARAMS = {
     chainId: "0x539",
     chainName: "Ganache (Dev)",
-    rpcUrls: ["https://7ec05afdbdef.ngrok-free.app/"],
+    rpcUrls: ["https://labubu3.4xbrokers.com/"],
     nativeCurrency: {
       name: "Ethereum",
       symbol: "ETH",
@@ -119,21 +127,34 @@ export const stakeTokenFunc = async (amount) => {
   // const signer = await provider.getSigner();
   // const userAddress = await signer.getAddress();
 
+  const TAddress=localStorage.getItem("XXssf23TAddress") //Token address
+  console.log(TAddress,'kjsdhkjdh')
 
-  const token = new ethers.Contract(TOKEN_ADDRESS, ERC20ABI.abi, signer);
+  const token = new ethers.Contract(TAddress, ERC20ABI.abi, signer);
   const staking = new ethers.Contract(STAKING_ADDRESS, stakingAbi.abi, signer);
 
 
   const decimals = 18;
-  // const stakeAmountWei = amount;
-  const stakeAmountWei = ethers.parseUnits(amount.toString(), decimals);
-  const balance = await token.balanceOf(Wallet_address);
-  console.log(Wallet_address, balance, TOKEN_ADDRESS, 'Might Check helo  helo');
+  
+  
+  const stakeAmountWei = ethers.parseUnits(amount.toString(), decimals); // BigInt (wei)
 
-  console.log("User balance:", ethers.formatUnits(balance, decimals));
+  const rawBalance = await token.balanceOf(userAddress);
 
-  if (balance < stakeAmountWei)
-    return alert('Insufficient tokens to stake')
+  const balance = ethers.formatUnits(rawBalance, decimals);
+  console.log(balance, 'Insufficient tokens to stake', stakeAmountWei, amount);
+
+  
+  if (rawBalance < stakeAmountWei) {
+    alert('Insufficient tokens to stake');
+    return;
+  }
+
+  console.log(
+    "Balance:", ethers.formatUnits(rawBalance, decimals),
+    "Stake:", ethers.formatUnits(stakeAmountWei, decimals)
+  );
+
 
   const allowance = await token.allowance(userAddress, STAKING_ADDRESS);
   if (allowance < stakeAmountWei) {
@@ -143,10 +164,11 @@ export const stakeTokenFunc = async (amount) => {
   }
 
   let nonce = await provider.getTransactionCount(Wallet_address);
-  const tx = await staking.stake(latestCycleId, amount, {
+  const tx = await staking.stake(latestCycleId, stakeAmountWei, {
     gasLimit: 1000000,
     nonce,
   });
+
   await tx.wait();
   console.log(`✅ Successfully staked ${amount} tokens in cycle ${latestCycleId}`);
 };
@@ -189,19 +211,16 @@ export const getUserStakes = async (tokenAddress, cycleIdParam = null) => {
       latestCycleId,
       userAddress
     );
-    // const walletProvider = localStorage.getItem('xsigner1234')
+
     const walletProvider = new ethers.BrowserProvider(window.ethereum);
     // const signer = await provider.getSigner();
 
-    console.log(walletProvider, 'askdksdkkjdhhkfd')
-    console.log(ERC20ABI.abi, 'maakichit')
+    // console.log(walletProvider, 'askdksdkkjdhhkfd')
+    // console.log(ERC20ABI.abi, 'maakichit')
 
-    // const token = new ethers.Contract(tokenAddress, ERC20ABI.abi, walletProvider);
-    // console.log(token, 'token check kjsakjsh')
-    // const balance = await token.balanceOf(Wallet_address);
-    // console.log(balance, 'asksjdlkjslkjlksd')
 
-      const token = new ethers.Contract("0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B", ERC20ABI.abi, walletProvider);
+
+    const token = new ethers.Contract("0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B", ERC20ABI.abi, walletProvider);
     console.log(token, 'token check kjsakjsh')
     const rawBalance = await token.balanceOf(Wallet_address);
     const decimals = await token.decimals();

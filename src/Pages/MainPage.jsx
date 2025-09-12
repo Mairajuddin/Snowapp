@@ -10,8 +10,9 @@ import { claimTokens, connectWalletFunc, disconnectWalletFunc, getUserStakes, st
 import { FireApi } from '../hooks/useRequest';
 import TimeDisplay from '../Components/TimeDuration';
 import CountdownTimer from '../Components/CountdownTimer';
+import { socket } from '../utils/socket';
 
-const MainPage = () => {
+const MainPage = ({cycleData,loadingData,tokenAddressData}) => {
   const [currentPhase, setCurrentPhase] = useState('stake');
   const [isWalletConnected, setIsWalletConnected] = useState(false);
   const [walletAddress, setWalletAddress] = useState('');
@@ -19,9 +20,8 @@ const MainPage = () => {
   const [stakeAmount, setStakeAmount] = useState('');
   const [CurrentlyStakeAmount, setCurrentlyStakeAmount] = useState('')
   const [userBalance, setUserBalance] = useState();
-  const [previousBalance, setPreviousBalance] = useState('800.12');
   const [toasts, setToasts] = useState([]);
-  const [info, setInfo] = useState()
+  const [info, setInfo] = useState(cycleData)
   const [loading, setLoading] = useState(false)
   const [userStakeInfo, setUserStakeInfo] = useState(null);
 
@@ -45,7 +45,7 @@ const MainPage = () => {
 
 
 
-  const connectWallet = async () => {
+  const connectWallet = async (tokenAddressData) => {
     try {
       addToast('pending', 'Connecting wallet...');
       const result = await connectWalletFunc();
@@ -55,7 +55,7 @@ const MainPage = () => {
       if (result && result.address) {
         setIsWalletConnected(true);
         setWalletAddress(result.address);
-        handleGetInfo()
+        // handleGetInfo()
         addToast('success', 'Wallet connected successfully');
       } else {
         addToast('error', 'Failed to connect wallet');
@@ -97,8 +97,9 @@ const MainPage = () => {
 
 
   useEffect(() => {
-    handleGetInfo();
-  }, []);
+    // handleGetInfo();
+    setInfo(cycleData)
+  }, );
 
 
   const handleRefereshStake = async () => {
@@ -124,26 +125,14 @@ const MainPage = () => {
     }
   }, [userStakeInfo]);
 
+console.log("localStorage raw:", localStorage.getItem("XXssf23TAddress"));
 
-
-  // useEffect(() => {
-  //   const timer = setInterval(() => {
-  //     setCountdown(prev => {
-  //       let { days, hours, minutes, seconds } = prev;
-  //       if (seconds > 0) seconds--;
-  //       else if (minutes > 0) { minutes--; seconds = 59; }
-  //       else if (hours > 0) { hours--; minutes = 59; seconds = 59; }
-  //       else if (days > 0) { days--; hours = 23; minutes = 59; seconds = 59; }
-  //       return { days, hours, minutes, seconds };
-  //     });
-  //   }, 1000);
-  //   return () => clearInterval(timer);
-  // }, []);
 
   const handleStake = async () => {
     if (!stakeAmount || parseFloat(stakeAmount) <= 0 || info?.phase !== 'Staking') return;
-    handleUpdatePhase()
-    await stakeTokenFunc(stakeAmount, info?.cycle)
+    // handleUpdatePhase()
+    console.log(tokenAddressData,'kjasdhkdajh')
+    await stakeTokenFunc(stakeAmount, info?.cycle,tokenAddressData)
     const tokenAddress = info?.stakedToken
     const stakeRes = await getUserStakes(tokenAddress);
     console.log(stakeRes, 'KJSDKJHSSDHKJDSSSJKS')
@@ -166,9 +155,9 @@ const MainPage = () => {
     try {
       setCurrentlyStakeAmount('')
 
-      await handleUpdatePhase();
+      // await handleUpdatePhase();
 
-      const res = await claimTokens();
+      const res = await claimTokens(tokenAddressData);
       if (!res.success) {
         alert(`Error: ${res.message}`);
         return;
@@ -194,18 +183,6 @@ const MainPage = () => {
     }
   };
 
-  // const handleClaim = async () => {
-  //   handleUpdatePhase()
-  //   const res = await claimTokens();
-  //   if (res.success) {
-  //     console.log(res, 'check my data here ebeta')
-
-  //   } else {
-  //     alert(`Error: ${res.message}`);
-  //   }
-
-  // };
-
 
 
 
@@ -225,23 +202,53 @@ const MainPage = () => {
     return addr.slice(0, 6) + "..." + addr.slice(-4);
   };
 
+// const fetchCycle = async () => {
+//     // try {
+//     //   const res = await fetch("http://192.168.18.33:5000/get-cycle");
+//     //   console.log(res,'sakjhkajhhdkjhdsaj')
+//     //   const data = await res.json();
+//     //   console.log('data hy bahahahaha',data)
+//     // } catch (err) {
+//     //   console.error("Failed to fetch cycle info:", err);
+//     // }
+//      try {
+//       const response = await FireApi("get-cycle", "GET");
+
+//       if (response?.success || response?.ok) {
+//         //  setInfo(response?.data)
+//         console.log(response?.data, 'XXXXXXXXXXXXXXXXXX')
+
+        
+//       }
+//     } catch (error) {
+//       console.error("API call failed:", error);
+//     } finally {
+      
+//     }
+//   };
+
+//   useEffect(() => {
+    
+//     fetchCycle();
+
+    
+//     socket.on("getCycle", () => {
+      
+//         });
+
+    
+//     return () => {
+//       socket.off("cycleCreated");
+//     };
+//   }, []);
 
 
-  // if (loading) {
-  //   return (
-  //     <Box
-  //       sx={{
-  //         height: '100vh',
-  //         width: '100%',
-  //         display: 'flex',
-  //         justifyContent: 'center',
-  //         alignItems: 'center'
-  //       }}
-  //     >
-  //       <CircularProgress />
-  //     </Box>
-  //   );
-  // }
+
+
+
+
+
+
 
 
   return (
@@ -268,15 +275,15 @@ const MainPage = () => {
 
         <>
           <Container sx={{ py: 4 }}>
-            <Button
+            {/* <Button
               variant="contained"
               size="small"
-              onClick={handleGetInfo}
+              // onClick={handleGetInfo}
               sx={{ my: 2, display: "flex", alignItems: "center", gap: 1 }}
             >
               <RefreshCw size={16} />
               Refresh Cycle
-            </Button>
+            </Button> */}
 
             <Card sx={{ p: 3, textAlign: 'center', mb: 4, bgcolor: '#111827', borderRadius: '12px' }}>
               {/* Current Phase Header */}
@@ -369,6 +376,7 @@ const MainPage = () => {
                     <Box mt={2}>
                       <Typography variant="body2" sx={{ color: '#94A3B8' }}>User Balance</Typography>
                       <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                        {/* {String(userBalance)} */}
                         {String(userStakeInfo?.userBalance ?? userBalance ?? "0").slice(0, 5)}
                       </Typography>
 
