@@ -104,7 +104,7 @@ const MainPage = ({cycleData,loadingData,tokenAddressData}) => {
 
   const handleRefereshStake = async () => {
     // const stakeRes = await getUserStakes();
-    const tokenAddress = info?.stakedToken
+    const tokenAddress = tokenAddressData||localStorage.getItem("XXssf23TAddress")
     console.log(tokenAddress, 'sakjdaskjdsahk')
     const stakeRes = await getUserStakes(tokenAddress);
     console.log(stakeRes, 'KJSDKJHSSDHKJDSSSJKS')
@@ -133,7 +133,10 @@ console.log("localStorage raw:", localStorage.getItem("XXssf23TAddress"));
     // handleUpdatePhase()
     console.log(tokenAddressData,'kjasdhkdajh')
     await stakeTokenFunc(stakeAmount, info?.cycle,tokenAddressData)
-    const tokenAddress = info?.stakedToken
+    // const tokenAddress = info?.stakedToken
+
+    const tokenAddress = tokenAddressData||localStorage.getItem("XXssf23TAddress")
+
     const stakeRes = await getUserStakes(tokenAddress);
     console.log(stakeRes, 'KJSDKJHSSDHKJDSSSJKS')
     if (stakeRes.success) {
@@ -166,7 +169,9 @@ console.log("localStorage raw:", localStorage.getItem("XXssf23TAddress"));
       console.log("Claim response:", res);
 
       // const stakeRes = await getUserStakes();
-      const tokenAddress = info?.stakedToken
+      // const tokenAddress = info?.stakedToken
+          const tokenAddress = tokenAddressData||localStorage.getItem("XXssf23TAddress")
+
       const stakeRes = await getUserStakes(tokenAddress);
       console.log("User stake info:", stakeRes);
 
