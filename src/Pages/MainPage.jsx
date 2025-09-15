@@ -11,8 +11,16 @@ import { FireApi } from '../hooks/useRequest';
 import TimeDisplay from '../Components/TimeDuration';
 import CountdownTimer from '../Components/CountdownTimer';
 import { socket } from '../utils/socket';
+import { useCycle } from '../context/CycleContext';
 
-const MainPage = ({cycleData,loadingData,tokenAddressData}) => {
+// const MainPage = ({cycleData,loadingData,tokenAddressData}) => {
+const MainPage = () => {
+  const cycle = useCycle() || {};
+
+  const { cycleData, loadingData, tokenAddressData } = cycle;
+  
+
+
   const [currentPhase, setCurrentPhase] = useState('stake');
   const [isWalletConnected, setIsWalletConnected] = useState(false);
   const [walletAddress, setWalletAddress] = useState('');
@@ -21,7 +29,7 @@ const MainPage = ({cycleData,loadingData,tokenAddressData}) => {
   const [CurrentlyStakeAmount, setCurrentlyStakeAmount] = useState('')
   const [userBalance, setUserBalance] = useState();
   const [toasts, setToasts] = useState([]);
-  const [info, setInfo] = useState(cycleData)
+  const [info, setInfo] = useState(cycleData||"")
   const [loading, setLoading] = useState(false)
   const [userStakeInfo, setUserStakeInfo] = useState(null);
 
@@ -34,21 +42,15 @@ const MainPage = ({cycleData,loadingData,tokenAddressData}) => {
   };
   const removeToast = id => setToasts(prev => prev.filter(t => t.id !== id));
 
-  const handleUpdatePhase = async () => {
-    try {
-      const response = await FireApi('admin/update-phase', 'POST')
-
-    } catch (error) {
-      console.log(error)
-    }
-  }
+ 
 
 
 
-  const connectWallet = async (tokenAddressData) => {
+  const connectWallet = async () => {
+    console.log(tokenAddressData,'kjjhskjdhd')
     try {
       addToast('pending', 'Connecting wallet...');
-      const result = await connectWalletFunc();
+      const result = await connectWalletFunc(tokenAddressData);
       if (result && result.balance) {
         setUserBalance(result.balance)
       }
@@ -72,28 +74,7 @@ const MainPage = ({cycleData,loadingData,tokenAddressData}) => {
     addToast('error', 'Wallet disconnected');
   };
 
-  const handleGetInfo = async () => {
-    setLoading(true);
-    try {
-      const response = await FireApi("get-cycle-info", "GET");
-
-      if (response?.success || response?.ok) {
-        setInfo(response?.data);
-        console.log(response?.data, 'XXXXXXXXXXXXXXXXXX')
-
-        // if (response?.data?.cycle) {
-        //   const stakeRes = await getUserStakes(response.data.cycle);
-        //   if (stakeRes.success) {
-        //     setUserStakeInfo(stakeRes);
-        //   }
-        // }
-      }
-    } catch (error) {
-      console.error("API call failed:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+ 
 
 
   useEffect(() => {
@@ -106,9 +87,10 @@ const MainPage = ({cycleData,loadingData,tokenAddressData}) => {
     // const stakeRes = await getUserStakes();
     const tokenAddress = tokenAddressData||localStorage.getItem("XXssf23TAddress")
     console.log(tokenAddress, 'sakjdaskjdsahk')
-    const stakeRes = await getUserStakes(tokenAddress);
+    const stakeRes = await getUserStakes(info?.cycle);
     console.log(stakeRes, 'KJSDKJHSSDHKJDSSSJKS')
     if (stakeRes.success) {
+      console.log(stakeRes.responseData?.userStakes,'sdkjhaskjdhkjsah')
       setUserStakeInfo(stakeRes.responseData);
       setUserBalance(stakeRes?.responseData?.userBalance)
     } else {
@@ -125,19 +107,19 @@ const MainPage = ({cycleData,loadingData,tokenAddressData}) => {
     }
   }, [userStakeInfo]);
 
-console.log("localStorage raw:", localStorage.getItem("XXssf23TAddress"));
+// console.log("localStorage raw:", localStorage.getItem("XXssf23TAddress"));
 
 
   const handleStake = async () => {
     if (!stakeAmount || parseFloat(stakeAmount) <= 0 || info?.phase !== 'Staking') return;
     // handleUpdatePhase()
-    console.log(tokenAddressData,'kjasdhkdajh')
+    
     await stakeTokenFunc(stakeAmount, info?.cycle,tokenAddressData)
     // const tokenAddress = info?.stakedToken
 
     const tokenAddress = tokenAddressData||localStorage.getItem("XXssf23TAddress")
 
-    const stakeRes = await getUserStakes(tokenAddress);
+    const stakeRes = await getUserStakes(info?.cycle,tokenAddressData);
     console.log(stakeRes, 'KJSDKJHSSDHKJDSSSJKS')
     if (stakeRes.success) {
       setCurrentlyStakeAmount(stakeAmount)
@@ -172,7 +154,7 @@ console.log("localStorage raw:", localStorage.getItem("XXssf23TAddress"));
       // const tokenAddress = info?.stakedToken
           const tokenAddress = tokenAddressData||localStorage.getItem("XXssf23TAddress")
 
-      const stakeRes = await getUserStakes(tokenAddress);
+      const stakeRes = await getUserStakes(info?.cycle);
       console.log("User stake info:", stakeRes);
 
       if (stakeRes.success) {

@@ -10,50 +10,58 @@ import PageNotFound from './Pages/PageNotFound'
 import ProtectedRoute from './Components/ProtecteRoute'
 import { FireApi } from './hooks/useRequest'
 import { socket } from './utils/socket'
+import { getUserStakes } from './utils/walletUtils'
 
 function App() {
   
-  const [cycleData,setCycleData]=useState()
-  const [loadingData,setLoadingData]=useState(false)
-  const [tokenAddressData,setTokenAddressData]=useState()
+//   const [cycleData,setCycleData]=useState()
+//    const [tokenAddressData,setTokenAddressData]=useState()
 
- const fetchCycle = async () => {
-    try {
-      setLoadingData(true)
-      const response = await FireApi("get-cycle", "GET");
+//  const fetchCycle = async () => {
+//     try {
+//       setLoadingData(true)
+//       const response = await FireApi("get-cycle", "GET");
 
-      if (response?.success || response?.ok) {
-        console.log("Cycle Data:", response?.data);
-        setCycleData(response?.data)
-        setTokenAddressData(response?.data?.stakedToken)
-        localStorage.setItem('XXssf23TAddress',response?.data?.stakedToken)
-              setLoadingData(false)
+//       if (response?.success || response?.ok) {
+//         console.log("Cycle Data:", response?.data);
+//         setCycleData(response?.data)
+//         setTokenAddressData(response?.data?.stakedToken)
+//           // if (stakeRes.success) {
+//           //   // setUserStakeInfo(stakeRes);
+//           // }
+//         localStorage.setItem('XXssf23TAddress',response?.data?.stakedToken)
+        
+//         const stakeRes = await getUserStakes(response?.data?.cycle);
+//               setLoadingData(false)
+        
+        
+//         // setInfo(response?.data) // if you want to store it in state
+//       }
+//     } catch (error) {
+//       setLoadingData(false)
+//       console.error("API call failed:", error);
+//     }
+//   };
 
-        // setInfo(response?.data) // if you want to store it in state
-      }
-    } catch (error) {
-      setLoadingData(false)
-      console.error("API call failed:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchCycle();
+//   useEffect(() => {
+//     fetchCycle();
     
-    socket.on("getCycle", (MESSAGE) => {
-      console.log("SOCKET EVENT getCycle:", MESSAGE);
-      fetchCycle();
-    });
+//     socket.on("getCycle", (MESSAGE) => {
+//       console.log("SOCKET EVENT getCycle:", MESSAGE);
+//       fetchCycle();
+//     });
 
-    return () => {
-      socket.off("getCycle");
-    };
-  }, []);
+//     return () => {
+//       socket.off("getCycle");
+//     };
+//   }, []);
 
   return (
 
     <Routes>
-      <Route path="/" element={<MainPage cycleData={cycleData} loadingData={loadingData} tokenAddressData={tokenAddressData}/>} />
+      {/* <Route path="/" element={<MainPage cycleData={cycleData} tokenAddressData={tokenAddressData}/>} /> */}
+      <Route path="/" element={<MainPage/>} />
+
       <Route path="/admin-login" element={<AdminLogin />} />
       <Route path="/admin" element={
             <ProtectedRoute>

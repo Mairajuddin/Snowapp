@@ -12,7 +12,8 @@ const CYCLE = {
 
 
 
-export const connectWalletFunc = async () => {
+export const connectWalletFunc = async (tokenAddressData) => {
+  
   if (typeof window.ethereum === 'undefined') {
     alert('MetaMask not found. Please install it.');
     return null;
@@ -24,17 +25,15 @@ export const connectWalletFunc = async () => {
     localStorage.setItem('providerCheck', provider)
     await provider.send('eth_requestAccounts', []);
     const signer = await provider.getSigner();
-    const tokenAddress = localStorage.getItem("XXssf23TAddress")
+    const tokenAddress =tokenAddressData|| localStorage.getItem("XXssf23TAddress")
     const tokenFinalAddress = tokenAddress || "0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B"
+
     console.log(tokenFinalAddress, 'kjhjhdjdjhdkjhdkjhd')
     const token = new ethers.Contract(tokenFinalAddress, ERC20ABI.abi, signer);
     console.log(token, 'token check kjsakjsh')
     const address = await signer.getAddress();
     const rawBalance = await token.balanceOf(address);
-
-    // const rawBalance = await token.balanceOf(Wallet_address);
     const decimals = await token.decimals();
-
     const balance = ethers.formatUnits(rawBalance, decimals);
 
 
@@ -71,27 +70,30 @@ const Wallet_address = localStorage.getItem("wallet_address")
 
 
 
+
+
 export const stakeTokenFunc = async (amount) => {
+  console.log(amount,'sakjjhdasjkh')
+  if (!window.ethereum) throw new Error("MetaMask not installed");
 
   const provider = new ethers.BrowserProvider(window.ethereum);
   const signer = await provider.getSigner();
   const userAddress = await signer.getAddress();
-
 
   const stakingContract = new ethers.Contract(
     STAKING_ADDRESS,
     stakingAbi.abi,
     signer
   );
-  let cycleId = await stakingContract.currentCycleId();
 
+  // ✅ Cycle check
+  const cycleId = await stakingContract.currentCycleId();
   if (Number(cycleId) === 0) {
     return { success: false, message: "No active cycle" };
   }
-
-
   const latestCycleId = Number(cycleId) - 1;
 
+  // ✅ Chain setup
   const GANACHE_PARAMS = {
     chainId: "0x539",
     chainName: "Ganache (Dev)",
@@ -102,7 +104,6 @@ export const stakeTokenFunc = async (amount) => {
       decimals: 18,
     },
   };
-
 
   try {
     await window.ethereum.request({
@@ -121,32 +122,27 @@ export const stakeTokenFunc = async (amount) => {
     }
   }
 
-  if (!window.ethereum) throw new Error("MetaMask not installed");
-
-  // const provider = new ethers.BrowserProvider(window.ethereum);
-  // const signer = await provider.getSigner();
-  // const userAddress = await signer.getAddress();
-
-  const TAddress = localStorage.getItem("XXssf23TAddress") //Token address
-  console.log(TAddress, 'kjsdhkjdh')
+  // ✅ Token setup
+  const TAddress = localStorage.getItem("XXssf23TAddress"); //Token address
+  console.log(TAddress,'asdjajldkajld')
+  if (!TAddress) {
+    throw new Error("Token address not found in localStorage");
+  }
 
   const token = new ethers.Contract(TAddress, ERC20ABI.abi, signer);
-  const staking = new ethers.Contract(STAKING_ADDRESS, stakingAbi.abi, signer);
+  const decimals = await token.decimals();
 
+  // ✅ Parse amount correctly
+  if (!amount || isNaN(amount)) {
+    throw new Error("Invalid amount");
+  }
+console.log(amount,'sjksdhjkdshdkfsj')
+  const stakeAmountWei = ethers.parseUnits(amount.toString(), decimals);
 
-  const decimals = 18;
-
-
-  const stakeAmountWei = ethers.parseUnits(amount.toString(), decimals); // BigInt (wei)
-
+  // ✅ Balance check
   const rawBalance = await token.balanceOf(userAddress);
-
-  const balance = ethers.formatUnits(rawBalance, decimals);
-  console.log(balance, 'Insufficient tokens to stake', stakeAmountWei, amount);
-
-
   if (rawBalance < stakeAmountWei) {
-    alert('Insufficient tokens to stake');
+    alert("Insufficient tokens to stake");
     return;
   }
 
@@ -154,8 +150,8 @@ export const stakeTokenFunc = async (amount) => {
     "Balance:", ethers.formatUnits(rawBalance, decimals),
     "Stake:", ethers.formatUnits(stakeAmountWei, decimals)
   );
-
-
+console.log(STAKING_ADDRESS,'sakjskjsahashasjhsak', stakeAmountWei)
+  // ✅ Allowance check
   const allowance = await token.allowance(userAddress, STAKING_ADDRESS);
   if (allowance < stakeAmountWei) {
     const approveTx = await token.approve(STAKING_ADDRESS, stakeAmountWei);
@@ -163,23 +159,19 @@ export const stakeTokenFunc = async (amount) => {
     console.log("✅ Tokens approved");
   }
 
-  let nonce = await provider.getTransactionCount(Wallet_address);
-  const tx = await staking.stake(latestCycleId, stakeAmountWei, {
+  // ✅ Staking tx
+  const tx = await stakingContract.stake(latestCycleId, stakeAmountWei, {
     gasLimit: 1000000,
-    nonce,
   });
 
   await tx.wait();
   console.log(`✅ Successfully staked ${amount} tokens in cycle ${latestCycleId}`);
+  return { success: true, message: "Stake successful" };
 };
 
-
-
-// --------------------------GET USER STAKES-----------------------------------------------
-
-export const getUserStakes = async ( cycleIdParam = null) => {
-  try {
-    
+export const getUserStakes = async (cycleIdParam = null,tokenAddressData) => {
+  // try {
+console.log(cycleIdParam,'kjashkjdhkh')
     const provider = new ethers.BrowserProvider(window.ethereum);
     const signer = await provider.getSigner();
     const userAddress = await signer.getAddress();
@@ -203,51 +195,53 @@ export const getUserStakes = async ( cycleIdParam = null) => {
       cycleIdParam !== null ? Number(cycleIdParam) : Number(cycleId) - 1;
 
     console.log({ latestCycleId });
-
+    console.log(userAddress, 'jjasdks', latestCycleId)
     var data = await stakingContract.getUserStake(
       latestCycleId,
       userAddress
     );
-
+    console.log('mainloghun', data)
     const walletProvider = new ethers.BrowserProvider(window.ethereum);
 
 
-    const tokenAddress = localStorage.getItem("XXssf23TAddress")
+    const tokenAddress =tokenAddressData|| localStorage.getItem("XXssf23TAddress")
     const tokenFinalAddress = tokenAddress || "0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B"
     console.log(tokenFinalAddress, 'kjhjhdjdjhdkjhdkjhd')
 
     const token = new ethers.Contract(tokenFinalAddress, ERC20ABI.abi, walletProvider);
     console.log(token, 'token check kjsakjsh')
-    const rawBalance = await token.balanceOf(Wallet_address);
+    const rawBalance = await token.balanceOf(userAddress);
     const decimals = await token.decimals();
 
     const balance = ethers.formatUnits(rawBalance, decimals);
     console.log(balance, 'asksjdlkjslkjlksd')
- let userStakes
+    
+    let userStakes = Number(data)
     if (Number(data) != 0) {
-     
-
-      const totalStakedToken = ethers.formatUnits(data, decimals);
-      userStakes = totalStakedToken;
       
-    } else userStakes = Number(data);
-console.log(userStakes)
+      const totalStakedToken = ethers.formatUnits(data, decimals);
+      console.log(totalStakedToken,'ssffskjfkfsjkfsd')
+      data = totalStakedToken;
+    } else data = Number(data);
+
+
+    console.log(userStakes)
     const responseData = {
-      userStakes: userStakes,
+      userStakes: data,
       userBalance: balance
     };
 
-    console.log(data, 'jhjksdhkjhfsdkjfhskhfskdj')
+    console.log(responseData, 'jhjksdhkjhfsdkjfhskhfskdj')
 
     return { success: true, responseData, message: "success" };
-  } catch (error) {
-    console.error(error);
-    return {
-      success: false,
-      message: "Something went wrong",
-      error: error.message,
-    };
-  }
+  // } catch (error) {
+  //   console.error(error);
+  //   return {
+  //     success: false,
+  //     message: "Something went wrong",
+  //     error: error.message,
+  //   };
+  // }
 };
 
 // -----------------CLAIM TOKENS-----------------------------------------
