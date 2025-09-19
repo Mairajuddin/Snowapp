@@ -62,7 +62,8 @@ export const disconnectWalletFunc = () => {
   return true;
 };
 
-const STAKING_ADDRESS = "0xCfEB869F69431e42cdB54A4F4f105C19C080A601"; //stakingmanager network
+//||"0xCfEB869F69431e42cdB54A4F4f105C19C080A601"; //stakingmanager network
+const STAKING_ADDRESS = import.meta.env.VITE_STAKING_ADDRESS
 const ChecktokenAddress = localStorage.getItem("XXssf23TAddress")
 const TestTOKEN_ADDRESS = ChecktokenAddress || "0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B"
 const TOKEN_ADDRESS = TestTOKEN_ADDRESS
@@ -97,7 +98,7 @@ export const stakeTokenFunc = async (amount) => {
   const GANACHE_PARAMS = {
     chainId: "0x539",
     chainName: "Ganache (Dev)",
-    rpcUrls: ["https://labubu3.4xbrokers.com/"],
+    rpcUrls: [import.meta.env.VITE_RPC_URL],
     nativeCurrency: {
       name: "Ethereum",
       symbol: "ETH",

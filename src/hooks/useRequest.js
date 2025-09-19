@@ -6,8 +6,8 @@
 // export const baseURL = "http://64.23.166.88:7218";
 // export const imageURL = "http://64.23.166.88:7218/";
 // ----------------------------------------------UPDATED SET URL-----------------------
-export const baseURL = "https://labubu2.4xbrokers.com";
-export const imageURL = "https://labubu2.4xbrokers.com/";
+export const baseURL = import.meta.env.VITE_BASE_URL||"https://labubu2.4xbrokers.com";
+export const imageURL = import.meta.env.VITE_BASE_URL||"https://labubu2.4xbrokers.com/";
 
 
 
