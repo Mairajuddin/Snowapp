@@ -32,9 +32,16 @@ export const connectWalletFunc = async (tokenAddressData) => {
     const token = new ethers.Contract(tokenFinalAddress, ERC20ABI.abi, signer);
     console.log(token, 'token check kjsakjsh')
     const address = await signer.getAddress();
-    const rawBalance = await token.balanceOf(address);
-    const decimals = await token.decimals();
-    const balance = ethers.formatUnits(rawBalance, decimals);
+    let balance=0
+    try {
+      
+      const rawBalance = await token.balanceOf(address);
+      const decimals = await token.decimals();
+       balance = ethers.formatUnits(rawBalance, decimals);
+    }
+     catch (error) {
+      
+    }
 
 
 
@@ -51,7 +58,7 @@ export const connectWalletFunc = async (tokenAddressData) => {
 
     return { address, signature, balance };
   } catch (err) {
-    alert('❌ Error: ' + err.message);
+    alert( err?.code==="ACTION_REJECTED"?"Action Rejected":err.message);
     return null;
   }
 };
@@ -201,7 +208,7 @@ console.log(cycleIdParam,'kjashkjdhkh')
       latestCycleId,
       userAddress
     );
-    console.log('mainloghun', data)
+    
     const walletProvider = new ethers.BrowserProvider(window.ethereum);
 
 
@@ -248,7 +255,7 @@ console.log(cycleIdParam,'kjashkjdhkh')
 // -----------------CLAIM TOKENS-----------------------------------------
 
 
-export const claimTokens = async () => {
+export const claimTokens = async (cycleId) => {
   try {
     const provider = new ethers.BrowserProvider(window.ethereum);
     const signer = await provider.getSigner();
@@ -260,13 +267,14 @@ export const claimTokens = async () => {
       signer
     );
 
-    let cycleId = await stakingContract.currentCycleId();
-    if (Number(cycleId) === 0) {
-      throw new Error("No active cycle");
-    }
+    // let cycleId = await stakingContract.currentCycleId();
+    // if (Number(cycleId) === 0) {
+    //   throw new Error("No active cycle");
+    // }
 
-    // ⚠️ Try without -1 first
-    const latestCycleId = Number(cycleId) - 1;
+    // // ⚠️ Try without -1 first
+    // const latestCycleId = Number(cycleId) - 1;
+    const latestCycleId =cycleId
 
     let userStakes = await stakingContract.getUserStake(latestCycleId, userAddress);
     console.log("User stakes:", Number(userStakes));

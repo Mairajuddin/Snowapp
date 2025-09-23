@@ -9,6 +9,8 @@ export const CycleProvider = ({ children }) => {
   const [cycleData, setCycleData] = useState(null);
   const [loadingData, setLoadingData] = useState(false);
   const [tokenAddressData, setTokenAddressData] = useState(null);
+  const [userBalanceData, setUserBalance] = useState();
+  const [userStakeInfoData, setUserStakeInfo] = useState(null);
 
   const fetchCycle = async () => {
     try {
@@ -18,11 +20,12 @@ export const CycleProvider = ({ children }) => {
       if (response?.success || response?.ok) {
         setCycleData(response?.data);
         setTokenAddressData(response?.data?.stakedToken);
-console.log(response?.data,'cycle ddata check')
+        console.log(response?.data, 'cycle ddata check')
         localStorage.setItem("XXssf23TAddress", response?.data?.stakedToken);
-        
-        await getUserStakes(response?.data?.cycle);
 
+        const stakeRes = await getUserStakes(response?.data?.cycle, response?.data?.stakedToken);
+        setUserStakeInfo(stakeRes.responseData);
+        setUserBalance(stakeRes?.responseData?.userBalance)
         setLoadingData(false);
       }
     } catch (error) {
@@ -45,7 +48,7 @@ console.log(response?.data,'cycle ddata check')
   }, []);
 
   return (
-    <CycleContext.Provider value={{ cycleData, loadingData, tokenAddressData, fetchCycle }}>
+    <CycleContext.Provider value={{ cycleData, loadingData, tokenAddressData, fetchCycle, userBalanceData, userStakeInfoData }}>
       {children}
     </CycleContext.Provider>
   );

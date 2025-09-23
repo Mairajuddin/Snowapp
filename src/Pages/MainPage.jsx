@@ -17,7 +17,7 @@ import { useCycle } from '../context/CycleContext';
 const MainPage = () => {
   const cycle = useCycle() || {};
 
-  const { cycleData, loadingData, tokenAddressData } = cycle;
+  const { cycleData, loadingData, tokenAddressData ,userStakeInfoData,userBalanceData} = cycle;
   
 
 
@@ -27,11 +27,11 @@ const MainPage = () => {
   const [countdown, setCountdown] = useState({ days: 27, hours: 14, minutes: 36, seconds: 9 });
   const [stakeAmount, setStakeAmount] = useState('');
   const [CurrentlyStakeAmount, setCurrentlyStakeAmount] = useState('')
-  const [userBalance, setUserBalance] = useState();
   const [toasts, setToasts] = useState([]);
   const [info, setInfo] = useState(cycleData||"")
   const [loading, setLoading] = useState(false)
-  const [userStakeInfo, setUserStakeInfo] = useState(null);
+  const [userBalance, setUserBalance] = useState(userBalanceData);
+  const [userStakeInfo, setUserStakeInfo] = useState(userStakeInfoData);
 
 
 
@@ -87,7 +87,7 @@ const MainPage = () => {
     // const stakeRes = await getUserStakes();
     const tokenAddress = tokenAddressData||localStorage.getItem("XXssf23TAddress")
     console.log(tokenAddress, 'sakjdaskjdsahk')
-    const stakeRes = await getUserStakes(info?.cycle);
+    const stakeRes = await getUserStakes(info?.cycle,tokenAddress);
     console.log(stakeRes, 'KJSDKJHSSDHKJDSSSJKS')
     if (stakeRes.success) {
       console.log(stakeRes.responseData?.userStakes,'sdkjhaskjdhkjsah')
@@ -119,7 +119,7 @@ const MainPage = () => {
 
     const tokenAddress = tokenAddressData||localStorage.getItem("XXssf23TAddress")
 
-    const stakeRes = await getUserStakes(info?.cycle,tokenAddressData);
+    const stakeRes = await getUserStakes(info?.cycle,tokenAddress);
     console.log(stakeRes, 'KJSDKJHSSDHKJDSSSJKS')
     if (stakeRes.success) {
       setCurrentlyStakeAmount(stakeAmount)
@@ -141,8 +141,8 @@ const MainPage = () => {
       setCurrentlyStakeAmount('')
 
       // await handleUpdatePhase();
-
-      const res = await claimTokens(tokenAddressData);
+const cycleId=info?.cycle
+      const res = await claimTokens(cycleId);
       if (!res.success) {
         alert(`Error: ${res.message}`);
         return;
@@ -154,7 +154,7 @@ const MainPage = () => {
       // const tokenAddress = info?.stakedToken
           const tokenAddress = tokenAddressData||localStorage.getItem("XXssf23TAddress")
 
-      const stakeRes = await getUserStakes(info?.cycle);
+      const stakeRes = await getUserStakes(info?.cycle,tokenAddress);
       console.log("User stake info:", stakeRes);
 
       if (stakeRes.success) {
@@ -346,7 +346,7 @@ const MainPage = () => {
                     {/* Balance */}
                     {/* userStakeInfo */}
                     {/* <Typography variant="h5" sx={{ fontWeight: 600 }}>{ info?.totalStaked}</Typography> */}
-                    <Typography variant="h5" sx={{ fontWeight: 600 }}>{userStakeInfo?.userStakes}</Typography>
+                    <Typography variant="h5" sx={{ fontWeight: 600 }}>{userStakeInfo?.userStakes||0}</Typography>
 
                     <Typography variant="body2" sx={{ color: '#94A3B8' }}>CYCLX</Typography>
 
