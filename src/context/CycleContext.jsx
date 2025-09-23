@@ -12,6 +12,23 @@ export const CycleProvider = ({ children }) => {
   const [userBalanceData, setUserBalance] = useState();
   const [userStakeInfoData, setUserStakeInfo] = useState(null);
 
+
+
+
+   const fetchUserStakeInfo = async (cycle, tokenAddress) => {
+    try {
+      const stakeRes = await getUserStakes(cycle, tokenAddress);
+      if (stakeRes.success) {
+        setUserStakeInfo(stakeRes.responseData);
+        setUserBalance(stakeRes?.responseData?.userBalance);
+      } else {
+        console.error("Failed to fetch stake info:", stakeRes.message);
+      }
+    } catch (error) {
+      console.error("Error fetching user stake info:", error);
+    }
+  };
+
   const fetchCycle = async () => {
     try {
       setLoadingData(true);
@@ -22,10 +39,10 @@ export const CycleProvider = ({ children }) => {
         setTokenAddressData(response?.data?.stakedToken);
         console.log(response?.data, 'cycle ddata check')
         localStorage.setItem("XXssf23TAddress", response?.data?.stakedToken);
-
-        const stakeRes = await getUserStakes(response?.data?.cycle, response?.data?.stakedToken);
-        setUserStakeInfo(stakeRes.responseData);
-        setUserBalance(stakeRes?.responseData?.userBalance)
+        await fetchUserStakeInfo(response?.data?.cycle, response?.data?.stakedToken)
+        // const stakeRes = await getUserStakes(response?.data?.cycle, response?.data?.stakedToken);
+        // setUserStakeInfo(stakeRes.responseData);
+        // setUserBalance(stakeRes?.responseData?.userBalance)
         setLoadingData(false);
       }
     } catch (error) {
@@ -48,7 +65,7 @@ export const CycleProvider = ({ children }) => {
   }, []);
 
   return (
-    <CycleContext.Provider value={{ cycleData, loadingData, tokenAddressData, fetchCycle, userBalanceData, userStakeInfoData }}>
+    <CycleContext.Provider value={{ cycleData, loadingData, tokenAddressData, fetchCycle, userBalanceData,fetchUserStakeInfo, userStakeInfoData }}>
       {children}
     </CycleContext.Provider>
   );

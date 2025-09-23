@@ -17,8 +17,8 @@ import { useCycle } from '../context/CycleContext';
 const MainPage = () => {
   const cycle = useCycle() || {};
 
-  const { cycleData, loadingData, tokenAddressData ,userStakeInfoData,userBalanceData} = cycle;
-  
+  const { cycleData, loadingData, fetchUserStakeInfo,tokenAddressData, userStakeInfoData, userBalanceData } = cycle;
+
 
 
   const [currentPhase, setCurrentPhase] = useState('stake');
@@ -28,7 +28,7 @@ const MainPage = () => {
   const [stakeAmount, setStakeAmount] = useState('');
   const [CurrentlyStakeAmount, setCurrentlyStakeAmount] = useState('')
   const [toasts, setToasts] = useState([]);
-  const [info, setInfo] = useState(cycleData||"")
+  const [info, setInfo] = useState(cycleData || "")
   const [loading, setLoading] = useState(false)
   const [userBalance, setUserBalance] = useState(userBalanceData);
   const [userStakeInfo, setUserStakeInfo] = useState(userStakeInfoData);
@@ -42,12 +42,12 @@ const MainPage = () => {
   };
   const removeToast = id => setToasts(prev => prev.filter(t => t.id !== id));
 
- 
+
 
 
 
   const connectWallet = async () => {
-    console.log(tokenAddressData,'kjjhskjdhd')
+    console.log(tokenAddressData, 'kjjhskjdhd')
     try {
       addToast('pending', 'Connecting wallet...');
       const result = await connectWalletFunc(tokenAddressData);
@@ -74,23 +74,23 @@ const MainPage = () => {
     addToast('error', 'Wallet disconnected');
   };
 
- 
+
 
 
   useEffect(() => {
     // handleGetInfo();
     setInfo(cycleData)
-  }, );
+  },);
 
 
   const handleRefereshStake = async () => {
     // const stakeRes = await getUserStakes();
-    const tokenAddress = tokenAddressData||localStorage.getItem("XXssf23TAddress")
+    const tokenAddress = tokenAddressData || localStorage.getItem("XXssf23TAddress")
     console.log(tokenAddress, 'sakjdaskjdsahk')
-    const stakeRes = await getUserStakes(info?.cycle,tokenAddress);
+    const stakeRes = await getUserStakes(info?.cycle, tokenAddress);
     console.log(stakeRes, 'KJSDKJHSSDHKJDSSSJKS')
     if (stakeRes.success) {
-      console.log(stakeRes.responseData?.userStakes,'sdkjhaskjdhkjsah')
+      console.log(stakeRes.responseData?.userStakes, 'sdkjhaskjdhkjsah')
       setUserStakeInfo(stakeRes.responseData);
       setUserBalance(stakeRes?.responseData?.userBalance)
     } else {
@@ -107,19 +107,16 @@ const MainPage = () => {
     }
   }, [userStakeInfo]);
 
-// console.log("localStorage raw:", localStorage.getItem("XXssf23TAddress"));
+  
 
 
   const handleStake = async () => {
     if (!stakeAmount || parseFloat(stakeAmount) <= 0 || info?.phase !== 'Staking') return;
-    // handleUpdatePhase()
-    
-    await stakeTokenFunc(stakeAmount, info?.cycle,tokenAddressData)
-    // const tokenAddress = info?.stakedToken
+    await stakeTokenFunc(stakeAmount, info?.cycle, tokenAddressData)
 
-    const tokenAddress = tokenAddressData||localStorage.getItem("XXssf23TAddress")
+    const tokenAddress = tokenAddressData || localStorage.getItem("XXssf23TAddress")
 
-    const stakeRes = await getUserStakes(info?.cycle,tokenAddress);
+    const stakeRes = await getUserStakes(info?.cycle, tokenAddress);
     console.log(stakeRes, 'KJSDKJHSSDHKJDSSSJKS')
     if (stakeRes.success) {
       setCurrentlyStakeAmount(stakeAmount)
@@ -135,13 +132,13 @@ const MainPage = () => {
 
   };
 
-  // handleClaim
+  
   const handleClaim = async () => {
     try {
       setCurrentlyStakeAmount('')
 
-      // await handleUpdatePhase();
-const cycleId=info?.cycle
+    
+      const cycleId = info?.cycle
       const res = await claimTokens(cycleId);
       if (!res.success) {
         alert(`Error: ${res.message}`);
@@ -150,11 +147,10 @@ const cycleId=info?.cycle
 
       console.log("Claim response:", res);
 
-      // const stakeRes = await getUserStakes();
-      // const tokenAddress = info?.stakedToken
-          const tokenAddress = tokenAddressData||localStorage.getItem("XXssf23TAddress")
 
-      const stakeRes = await getUserStakes(info?.cycle,tokenAddress);
+      const tokenAddress = tokenAddressData || localStorage.getItem("XXssf23TAddress")
+
+      const stakeRes = await getUserStakes(info?.cycle, tokenAddress);
       console.log("User stake info:", stakeRes);
 
       if (stakeRes.success) {
@@ -181,7 +177,7 @@ const cycleId=info?.cycle
       default: return '#94A3B8';
     }
   };
-  const formatNumber = num => num.toString().padStart(2, '0');
+
 
   const shortenAddress = (addr) => {
     if (!addr) return "";
@@ -189,52 +185,12 @@ const cycleId=info?.cycle
     return addr.slice(0, 6) + "..." + addr.slice(-4);
   };
 
-// const fetchCycle = async () => {
-//     // try {
-//     //   const res = await fetch("http://192.168.18.33:5000/get-cycle");
-//     //   console.log(res,'sakjhkajhhdkjhdsaj')
-//     //   const data = await res.json();
-//     //   console.log('data hy bahahahaha',data)
-//     // } catch (err) {
-//     //   console.error("Failed to fetch cycle info:", err);
-//     // }
-//      try {
-//       const response = await FireApi("get-cycle", "GET");
-
-//       if (response?.success || response?.ok) {
-//         //  setInfo(response?.data)
-//         console.log(response?.data, 'XXXXXXXXXXXXXXXXXX')
-
-        
-//       }
-//     } catch (error) {
-//       console.error("API call failed:", error);
-//     } finally {
-      
-//     }
-//   };
-
-//   useEffect(() => {
-    
-//     fetchCycle();
-
-    
-//     socket.on("getCycle", () => {
-      
-//         });
-
-    
-//     return () => {
-//       socket.off("cycleCreated");
-//     };
-//   }, []);
-
-
-
-
-
-
-
+  useEffect(()=>{
+    setUserStakeInfo(userStakeInfoData)
+    setUserBalance(userBalanceData)
+    console.log('jjaskjhaskdsahkjsdhdhkshkjsdhkfjh',userBalanceData,userStakeInfoData)
+  },[userBalanceData,userStakeInfoData])
+  
 
 
 
@@ -262,15 +218,7 @@ const cycleId=info?.cycle
 
         <>
           <Container sx={{ py: 4 }}>
-            {/* <Button
-              variant="contained"
-              size="small"
-              // onClick={handleGetInfo}
-              sx={{ my: 2, display: "flex", alignItems: "center", gap: 1 }}
-            >
-              <RefreshCw size={16} />
-              Refresh Cycle
-            </Button> */}
+
 
             <Card sx={{ p: 3, textAlign: 'center', mb: 4, bgcolor: '#111827', borderRadius: '12px' }}>
               {/* Current Phase Header */}
@@ -296,35 +244,7 @@ const cycleId=info?.cycle
                 DD : HH : MM : SS
               </Typography>
 
-              {/* <Box
-            component="hr"
-            sx={{
-              borderColor: 'white',
-              borderWidth: '1px',
-              mb: 3,
-              width: '60%',
-              my: 2,
-              marginLeft: 'auto',
-              marginRight: 'auto',
-            }}
-          />
-          <Box display="flex" justifyContent="center" gap={1} mb={1} flexWrap="wrap">
-            <Typography variant="body2" sx={{ color: '#94A3B8', fontWeight: 500 }}>
-              Next Phase Begins
-            </Typography>
-            <Typography variant="body2" sx={{ color: '#94A3B8', fontWeight: 700 }}>
-              Pre-Sale
-            </Typography>
-          </Box>
-          <Typography
-            variant="h4"
-            sx={{ color: '#E2E8F0', fontFamily: 'monospace', fontWeight: 600, letterSpacing: '2px' }}
-          >
-            {formatNumber(countdown.days)}d {formatNumber(countdown.hours)}h {formatNumber(countdown.minutes)}m {formatNumber(countdown.seconds)}s
-          </Typography>
-          <Typography variant="caption" sx={{ color: '#94A3B8', letterSpacing: '1.5px' }}>
-            Time Remaining
-          </Typography> */}
+
             </Card>
 
 
@@ -346,7 +266,7 @@ const cycleId=info?.cycle
                     {/* Balance */}
                     {/* userStakeInfo */}
                     {/* <Typography variant="h5" sx={{ fontWeight: 600 }}>{ info?.totalStaked}</Typography> */}
-                    <Typography variant="h5" sx={{ fontWeight: 600 }}>{userStakeInfo?.userStakes||0}</Typography>
+                    <Typography variant="h5" sx={{ fontWeight: 600 }}>{userStakeInfo?.userStakes || 0}</Typography>
 
                     <Typography variant="body2" sx={{ color: '#94A3B8' }}>CYCLX</Typography>
 
