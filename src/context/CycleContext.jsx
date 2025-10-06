@@ -16,6 +16,7 @@ export const CycleProvider = ({ children }) => {
 
 
    const fetchUserStakeInfo = async (cycle, tokenAddress) => {
+    
     try {
       const stakeRes = await getUserStakes(cycle, tokenAddress);
       if (stakeRes.success) {
@@ -39,7 +40,7 @@ export const CycleProvider = ({ children }) => {
         setTokenAddressData(response?.data?.stakedToken);
         console.log(response?.data, 'cycle ddata check')
         localStorage.setItem("XXssf23TAddress", response?.data?.stakedToken);
-        await fetchUserStakeInfo(response?.data?.cycle, response?.data?.stakedToken)
+        await fetchUserStakeInfo(response?.data, response?.data?.stakedToken)
         // const stakeRes = await getUserStakes(response?.data?.cycle, response?.data?.stakedToken);
         // setUserStakeInfo(stakeRes.responseData);
         // setUserBalance(stakeRes?.responseData?.userBalance)

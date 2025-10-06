@@ -87,7 +87,7 @@ const MainPage = () => {
     // const stakeRes = await getUserStakes();
     const tokenAddress = tokenAddressData || localStorage.getItem("XXssf23TAddress")
     console.log(tokenAddress, 'sakjdaskjdsahk')
-    const stakeRes = await getUserStakes(info?.cycle, tokenAddress);
+    const stakeRes = await getUserStakes(info, tokenAddress);
     console.log(stakeRes, 'KJSDKJHSSDHKJDSSSJKS')
     if (stakeRes.success) {
       console.log(stakeRes.responseData?.userStakes, 'sdkjhaskjdhkjsah')
@@ -112,11 +112,11 @@ const MainPage = () => {
 
   const handleStake = async () => {
     if (!stakeAmount || parseFloat(stakeAmount) <= 0 || info?.phase !== 'Staking') return;
-    await stakeTokenFunc(stakeAmount, info?.cycle, tokenAddressData)
+    await stakeTokenFunc(stakeAmount, info, tokenAddressData)
 
     const tokenAddress = tokenAddressData || localStorage.getItem("XXssf23TAddress")
 
-    const stakeRes = await getUserStakes(info?.cycle, tokenAddress);
+    const stakeRes = await getUserStakes(info, tokenAddress);
     console.log(stakeRes, 'KJSDKJHSSDHKJDSSSJKS')
     if (stakeRes.success) {
       setCurrentlyStakeAmount(stakeAmount)
@@ -139,7 +139,7 @@ const MainPage = () => {
 
     
       const cycleId = info?.cycle
-      const res = await claimTokens(cycleId);
+      const res = await claimTokens(info);
       if (!res.success) {
         alert(`Error: ${res.message}`);
         return;
@@ -150,7 +150,7 @@ const MainPage = () => {
 
       const tokenAddress = tokenAddressData || localStorage.getItem("XXssf23TAddress")
 
-      const stakeRes = await getUserStakes(info?.cycle, tokenAddress);
+      const stakeRes = await getUserStakes(info, tokenAddress);
       console.log("User stake info:", stakeRes);
 
       if (stakeRes.success) {
