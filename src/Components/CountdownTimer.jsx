@@ -8,7 +8,7 @@ const CountdownTimer = ({ targetTimestamp ,label=null}) => {
     if (!targetTimestamp) return null;
 
     const now = Math.floor(Date.now() / 1000);
-    const diff = targetTimestamp - now;
+    const diff = Number(targetTimestamp) - now;
 
     if (diff <= 0)
       return { days: 0, hours: 0, minutes: 0, seconds: 0 };

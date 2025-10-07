@@ -2,6 +2,7 @@
 import React from 'react';
 import { AppBar, Toolbar, Typography, Box, Chip, Button, useMediaQuery, useTheme } from '@mui/material';
 import { Wallet } from 'lucide-react';
+import { createCycle } from '../utils/walletUtils';
 
 const Header = ({ isWalletConnected, walletAddress, connectWallet, disconnectWallet }) => {
   const theme = useTheme();
@@ -54,8 +55,24 @@ const Header = ({ isWalletConnected, walletAddress, connectWallet, disconnectWal
           </Typography>
         </Box>
 
+       
+
         {/* Network + Wallet - Responsive adjustments */}
         <Box display="flex" gap={isMobile ? 1 : 2} alignItems="center">
+             <Button variant="outlined"
+              size={isMobile ? 'small' : 'medium'}
+              disabled={!isWalletConnected}
+              onClick={createCycle}
+              sx={{
+                borderColor: 'rgba(125, 196, 255, 0.5)',
+                color: '#000000',
+                textTransform: 'none',
+                backgroundColor:'#7DC4FF',
+                fontSize: isMobile ? '0.7rem' : '0.875rem',
+                cursor:isWalletConnected?'pointer':'not-allowed',
+                px: isMobile ? 1 : 2
+              }}>Create Cycle</Button>
+
           {!isMobile && ( // Hide network chip on mobile
             <Chip
               label="sepolia"

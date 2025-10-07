@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { socket } from "../utils/socket";
 import { FireApi } from "../hooks/useRequest";
-import { getUserStakes } from "../utils/walletUtils";
+import { getCycleInfo, getUserStakes } from "../utils/walletUtils";
 
 const CycleContext = createContext();
 
@@ -26,40 +26,74 @@ export const CycleProvider = ({ children }) => {
     }
   };
 
-  const fetchCycle = async () => {
+  // const fetchCycle = async () => {
+  //   try {
+  //     setLoadingData(true);
+  //     const response = await FireApi("get-cycle", "GET");
+
+  //     if (response?.success || response?.ok) {
+  //       setCycleData(response?.data);
+  //       setTokenAddressData(response?.data?.stakedToken);
+  //       console.log(response?.data, "cycle ddata check");
+  //       localStorage.setItem("XXssf23TAddress", response?.data?.stakedToken);
+  //       await fetchUserStakeInfo(response?.data, response?.data?.stakedToken);
+  //     setLoadingData(false);
+  //     }
+  //   } catch (error) {
+  //     console.error("API call failed:", error);
+  //     setLoadingData(false);
+  //   }
+  // };
+
+
+ const fetchCycle = async () => {
     try {
       setLoadingData(true);
-      const response = await FireApi("get-cycle", "GET");
+      const response = await getCycleInfo();
+      
+      if (response?.success) {
+        const data = response?.data;
+        setCycleData(data);
+        setTokenAddressData(data?.stakedToken);
 
-      if (response?.success || response?.ok) {
-        setCycleData(response?.data);
-        setTokenAddressData(response?.data?.stakedToken);
-        console.log(response?.data, "cycle ddata check");
-        localStorage.setItem("XXssf23TAddress", response?.data?.stakedToken);
-        await fetchUserStakeInfo(response?.data, response?.data?.stakedToken);
-        // const stakeRes = await getUserStakes(response?.data?.cycle, response?.data?.stakedToken);
-        // setUserStakeInfo(stakeRes.responseData);
-        // setUserBalance(stakeRes?.responseData?.userBalance)
-        setLoadingData(false);
+        console.log("Cycle Data from Blockchain:", data);
+        localStorage.setItem("XXssf23TAddress", data?.stakedToken);
+
+        await fetchUserStakeInfo(data, data?.stakedToken);
+      } else {
+        console.error("Failed to fetch cycle info:", response?.message);
       }
+
+      setLoadingData(false);
     } catch (error) {
-      console.error("API call failed:", error);
+      console.error("Error fetching cycle info:", error);
       setLoadingData(false);
     }
   };
 
+
   useEffect(() => {
+  fetchCycle();
+
+  const interval = setInterval(() => {
     fetchCycle();
+  }, 30000);
 
-    socket.on("getCycle", (MESSAGE) => {
-      console.log("SOCKET EVENT getCycle:", MESSAGE);
-      fetchCycle();
-    });
+  return () => clearInterval(interval);
+}, []);
 
-    return () => {
-      socket.off("getCycle");
-    };
-  }, []);
+  // useEffect(() => {
+  //   fetchCycle();
+
+  //   socket.on("getCycle", (MESSAGE) => {
+  //     console.log("SOCKET EVENT getCycle:", MESSAGE);
+  //     fetchCycle();
+  //   });
+
+  //   return () => {
+  //     socket.off("getCycle");
+  //   };
+  // }, []);
 
   return (
     <CycleContext.Provider

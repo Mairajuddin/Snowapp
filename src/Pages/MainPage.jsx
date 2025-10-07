@@ -42,8 +42,11 @@ const MainPage = () => {
     tokenAddressData,
     userStakeInfoData,
     userBalanceData,
+    fetchCycle
   } = cycle;
 
+
+  console.log(cycleData,'cgeck my chche cdatata')
   const [currentPhase, setCurrentPhase] = useState("stake");
   const [isWalletConnected, setIsWalletConnected] = useState(false);
   const [walletAddress, setWalletAddress] = useState("");
@@ -80,6 +83,7 @@ const MainPage = () => {
       if (result && result.address) {
         setIsWalletConnected(true);
         setWalletAddress(result.address);
+        await fetchCycle()
         // handleGetInfo()
         addToast("success", "Wallet connected successfully");
       } else {
@@ -278,11 +282,11 @@ const MainPage = () => {
 
               {/* <CountdownTimer targetTimestamp={info?.startTimestamp} label='Start Staking' /> */}
               <CountdownTimer
-                targetTimestamp={info?.stakingEnd}
+                targetTimestamp={Number(info?.stakingEnd)}
                 label="Staking End"
               />
               <CountdownTimer
-                targetTimestamp={info?.claimEnd}
+                targetTimestamp={Number(info?.claimEnd)}
                 label="Claim End"
               />
               <Typography
