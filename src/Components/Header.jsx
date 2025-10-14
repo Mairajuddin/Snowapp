@@ -2,9 +2,23 @@
 import React from 'react';
 import { AppBar, Toolbar, Typography, Box, Chip, Button, useMediaQuery, useTheme } from '@mui/material';
 import { Wallet } from 'lucide-react';
-import { createCycle } from '../utils/walletUtils';
+import { createCycle, finalizeCycle, updateCycle } from '../utils/walletUtils';
+import { useCycle } from '../context/CycleContext';
 
 const Header = ({ isWalletConnected, walletAddress, connectWallet, disconnectWallet }) => {
+
+  const cycle = useCycle() || {};
+
+  const {
+    cycleData,
+    loadingData,
+    fetchUserStakeInfo,
+    tokenAddressData,
+    userStakeInfoData,
+    userBalanceData,
+    fetchCycle
+  } = cycle;
+
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm')); // < 640px
   const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'lg')); // 640-1024px
@@ -25,12 +39,12 @@ const Header = ({ isWalletConnected, walletAddress, connectWallet, disconnectWal
         bgcolor: 'transparent',
         boxShadow: 'none',
         borderBottom: '1px solid #1E293B',
-        px: isMobile ? 1 : 2 
+        px: isMobile ? 1 : 2
       }}
     >
-      <Toolbar 
-        sx={{ 
-          display: 'flex', 
+      <Toolbar
+        sx={{
+          display: 'flex',
           justifyContent: 'space-between',
           minHeight: isMobile ? 56 : 64 // Adjust toolbar height
         }}
@@ -38,40 +52,52 @@ const Header = ({ isWalletConnected, walletAddress, connectWallet, disconnectWal
       >
         {/* Logo - Always visible */}
         <Box display="flex" alignItems="center" gap={1}>
-          <Box sx={{ 
-            width: isMobile ? 28 : 32, 
+          <Box sx={{
+            width: isMobile ? 28 : 32,
             height: isMobile ? 28 : 32,
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center' 
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
           }}>
             ❄
           </Box>
-          <Typography 
-            variant={isMobile ? 'subtitle1' : 'h6'} 
+          <Typography
+            variant={isMobile ? 'subtitle1' : 'h6'}
             sx={{ fontWeight: 600 }}
           >
             CYCLX
           </Typography>
         </Box>
 
-       
+
 
         {/* Network + Wallet - Responsive adjustments */}
         <Box display="flex" gap={isMobile ? 1 : 2} alignItems="center">
-             <Button variant="outlined"
-              size={isMobile ? 'small' : 'medium'}
-              disabled={!isWalletConnected}
-              onClick={createCycle}
-              sx={{
-                borderColor: 'rgba(125, 196, 255, 0.5)',
-                color: '#000000',
-                textTransform: 'none',
-                backgroundColor:'#7DC4FF',
-                fontSize: isMobile ? '0.7rem' : '0.875rem',
-                cursor:isWalletConnected?'pointer':'not-allowed',
-                px: isMobile ? 1 : 2
-              }}>Create Cycle</Button>
+          <Button variant="outlined"
+            size={isMobile ? 'small' : 'medium'}
+            disabled={!isWalletConnected}
+            onClick={createCycle}
+            sx={{
+              borderColor: 'rgba(125, 196, 255, 0.5)',
+              color: '#000000',
+              textTransform: 'none',
+              backgroundColor: '#7DC4FF',
+              fontSize: isMobile ? '0.7rem' : '0.875rem',
+              cursor: isWalletConnected ? 'pointer' : 'not-allowed',
+              px: isMobile ? 1 : 2
+            }}>Create Cycle</Button>
+          <Button onClick={updateCycle}>
+            Update Phase
+          </Button>
+          <Button
+            onClick={async () => {
+              const res = await finalizeCycle(cycleData);
+              console.log("Finalize result:", res);
+              alert(res.message);
+            }}
+          >
+            Finalize token
+          </Button>
 
           {!isMobile && ( // Hide network chip on mobile
             <Chip

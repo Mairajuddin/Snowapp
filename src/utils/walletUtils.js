@@ -91,14 +91,14 @@ export const stakeTokenFunc = async (amount, info) => {
   console.log("cycle", info, cycleId);
 
   // ✅ Cycle check
-  if (Number(cycleId) === 0) {
-    return { success: false, message: "No active cycle" };
-  }
+  // if (Number(cycleId) === 0) {
+  //   return { success: false, message: "No active cycle" };
+  // }
   const latestCycleId = Number(cycleId);
 
   // ✅ Chain setup
-  const GANACHE_PARAMS = {
-    chainId: "11155111",
+  const PARAMS = {
+    chainId: "0x539",
     chainName: "Public node",
     rpcUrls: [import.meta.env.VITE_RPC_URL],
     nativeCurrency: {
@@ -107,13 +107,13 @@ export const stakeTokenFunc = async (amount, info) => {
       decimals: 18,
     },
   };
-  const PARAMS = {
-    chainId: "0xaa36a7",
-    chainName: "Sepolia Test Network",
-    rpcUrls: [import.meta.env.VITE_RPC_URL],
-    nativeCurrency: { name: "SepoliaETH", symbol: "ETH", decimals: 18 },
-    blockExplorerUrls: ["https://sepolia.etherscan.io"],
-  };
+  // const PARAMS = {
+  //   chainId: "0xaa36a7",
+  //   chainName: "Sepolia Test Network",
+  //   rpcUrls: [import.meta.env.VITE_RPC_URL],
+  //   nativeCurrency: { name: "SepoliaETH", symbol: "ETH", decimals: 18 },
+  //   blockExplorerUrls: ["https://sepolia.etherscan.io"],
+  // };
 
   try {
     await window.ethereum.request({
@@ -343,6 +343,8 @@ export const getCycleInfo = async () => {
     const latestCycleId = Number(cycleId) - 1;
     const cycleInfo = await stakingContract.getCycle(latestCycleId);
 
+    // const phase = await stakingContract._computePhase(latestCycleId);
+    // console.log(phase,'check my pase')
     const {
       phase,
       startTimestamp,
@@ -423,6 +425,7 @@ export const getCycleInfo = async () => {
 
 export const createCycle = async () => {
   try {
+    
     if (!window.ethereum) throw new Error("MetaMask not installed");
 
     const provider = new ethers.BrowserProvider(window.ethereum);
@@ -439,11 +442,14 @@ export const createCycle = async () => {
     cycleId = Number(cycleId);
     const now = (await provider.getBlock("latest")).timestamp;
 
+    const savedRewardToken = localStorage.getItem("rewardToken");
+    const tokenToUse = savedRewardToken || import.meta.env.VITE_TOKEN_ADDRESS;
+
     let newCycleId;
 
     // Case 1: No cycle exists
     if (cycleId === 0) {
-      newCycleId = await createNewCycle(stakingContract, import.meta.env.VITE_TOKEN_ADDRESS, provider, userAddress);
+      newCycleId = await createNewCycle(stakingContract, tokenToUse, provider, userAddress);
     }
     // Case 2: Cycle exists
     else if (cycleId > 0) {
@@ -453,27 +459,14 @@ export const createCycle = async () => {
       const startTime = Number(startTimestamp);
       const stakeEnd = Number(stakingEnd);
       const claimEndNum = Number(claimEnd);
-      if (startTime < now) {
-        console.log("💤 Rest time ended — staking may start.");
-        alert("Rest time has ended!");
-      }
 
-      if (stakeEnd < now) {
-        console.log("✅ Staking time ended — claim period might start.");
-        alert("Staking time has ended!");
-      }
-
-      if (claimEndNum < now) {
-        console.log("🏁 Claim time ended — cycle is over.");
-        alert("Claim time has ended!");
-      }
 
       const cycleEnded = Number(claimEnd) < Math.floor(Date.now() / 1000);
 
-      // Cycle exists but ended -> create next cycle
+
       if (cycleEnded) {
         // newCycleId = await createNewCycle(stakingContract, tokenVersionAddress, provider, userAddress);  need to update it later
-        newCycleId = await createNewCycle(stakingContract, import.meta.env.VITE_TOKEN_ADDRESS, provider, userAddress);
+        newCycleId = await createNewCycle(stakingContract, tokenToUse, provider, userAddress);
       } else {
         return {
           success: false,
@@ -586,6 +579,103 @@ export const updateCycle = async () => {
     return {
       success: false,
       message: "Something went wrong",
+      error: error.message,
+    };
+  }
+};
+// -----------------------------------finalize token
+export const finalizeCycle = async (info) => {
+  try {
+    if (!window.ethereum) throw new Error("MetaMask not installed");
+
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const signer = await provider.getSigner();
+    const userAddress = await signer.getAddress();
+
+    const stakingContract = new ethers.Contract(
+      STAKING_ADDRESS,
+      stakingAbi.abi,
+      signer
+    );
+
+    // 1️⃣ Get current cycle ID
+    let cycleId = info?.cycle
+
+
+    if (cycleId === 0) {
+      return { success: false, message: "No active cycle" };
+    }
+
+    const latestCycleId = cycleId;
+    const cycleInfo = await stakingContract.getCycle(latestCycleId);
+
+    const { phase, rewardToken } = cycleInfo;
+
+    // Optional: your phase enum (can match backend Cycle enum)
+    //     const Cycle = ["Staking", "Claiming", "Rest"]; // update according to your contract
+    // console.log(Cycle[Number(phase)] ,'check phase')
+    // if (Cycle[Number(phase)] !== "Claiming") {   
+
+    if (info?.phase !== "Claiming") {
+      return {
+        success: false,
+        message: `Cycle is under ${info?.phase}`,
+      };
+    }
+
+    const zeroAddress = "0x0000000000000000000000000000000000000000";
+
+    if (rewardToken !== zeroAddress) {
+      return {
+        success: false,
+        message: "Cycle already finalized.",
+      };
+    }
+
+    console.log("✅ Finalizing cycle and deploying new reward token...");
+
+    let nonce = await provider.getTransactionCount(userAddress, "latest");
+    const feeData = await provider.getFeeData();
+
+    let tx;
+    try {
+      console.log("FINALIZING WITH NONCE", nonce);
+      tx = await stakingContract.finalizeCycleAndCreateToken(latestCycleId, {
+        nonce,
+        gasLimit: 1_000_000,
+        maxFeePerGas: feeData.maxFeePerGas * 2n,
+        maxPriorityFeePerGas: feeData.maxPriorityFeePerGas * 2n,
+      });
+    } catch (error) {
+      console.log("TRYING AGAIN WITH NONCE", nonce + 1);
+      tx = await stakingContract.finalizeCycleAndCreateToken(latestCycleId, {
+        nonce: nonce + 1,
+        gasLimit: 1_000_000,
+        maxFeePerGas: feeData.maxFeePerGas * 2n,
+        maxPriorityFeePerGas: feeData.maxPriorityFeePerGas * 2n,
+      });
+    }
+
+    const receipt = await tx.wait();
+
+    console.log("✅ Finalization successful:", receipt);
+    const updatedCycle = await stakingContract.getCycle(latestCycleId);
+    console.log("🎯 Reward Token Address:", updatedCycle.rewardToken);
+    if (updatedCycle.rewardToken && updatedCycle.rewardToken !== zeroAddress) {
+      localStorage.setItem("rewardToken", updatedCycle.rewardToken);
+      console.log("💾 Reward token saved to localStorage:", updatedCycle.rewardToken);
+    }
+
+    return {
+      success: true,
+      message: "Cycle finalized and new reward token created successfully",
+      receipt,
+    };
+  } catch (error) {
+    console.error("❌ Finalize Cycle Error:", error);
+    return {
+      success: false,
+      message: "Something went wrong while finalizing the cycle",
       error: error.message,
     };
   }
