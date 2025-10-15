@@ -109,13 +109,25 @@ export const stakeTokenFunc = async (amount, info) => {
         decimals: 18,
       },
     },
+    // TESTNET: {
+    //   chainId: "0xaa36a7",
+    //   chainName: "Sepolia Test Network",
+    //   rpcUrls: [import.meta.env.VITE_RPC_URL],
+    //   nativeCurrency: { name: "SepoliaETH", symbol: "ETH", decimals: 18 },
+    //   blockExplorerUrls: ["https://sepolia.etherscan.io/"],
+    // },
     TESTNET: {
-      chainId: "0xaa36a7",
+      chainId: "0xaa36a7", // Hex for 11155111
       chainName: "Sepolia Test Network",
-      rpcUrls: [import.meta.env.VITE_RPC_URL],
-      nativeCurrency: { name: "SepoliaETH", symbol: "ETH", decimals: 18 },
+      rpcUrls:["https://ethereum-sepolia-rpc.publicnode.com"], // [import.meta.env.VITE_SEPOLIA_RPC],
+      nativeCurrency: {
+        name: "Ethereum",
+        symbol: "ETH",
+        decimals: 18,
+      },
       blockExplorerUrls: ["https://sepolia.etherscan.io/"],
     },
+
     MAINNET: {},
   };
   const paramCheck = import.meta.env.VITE_NETWORK
@@ -236,10 +248,8 @@ export const getUserStakes = async (
 
   const walletProvider = new ethers.BrowserProvider(window.ethereum);
 
-  const tokenAddress =
-    tokenAddressData || localStorage.getItem("XXssf23TAddress");
-  const tokenFinalAddress =
-    tokenAddress || "0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B";
+  const tokenAddress =tokenAddressData 
+  const tokenFinalAddress =tokenAddress
   console.log(tokenFinalAddress, "kjhjhdjdjhdkjhdkjhd");
 
   const token = new ethers.Contract(
@@ -284,7 +294,7 @@ export const getUserStakes = async (
 
 export const claimTokens = async (cycleInfo) => {
   try {
-    console.log(cycleInfo,'jhhgasdhjgashgdashg')
+    console.log(cycleInfo, 'jhhgasdhjgashgdashg')
     const cycleId = cycleInfo?.cycle;
     const provider = new ethers.BrowserProvider(window.ethereum);
     const signer = await provider.getSigner();
