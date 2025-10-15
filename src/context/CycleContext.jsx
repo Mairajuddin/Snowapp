@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { socket } from "../utils/socket";
+
 import { FireApi } from "../hooks/useRequest";
 import { getCycleInfo, getUserStakes } from "../utils/walletUtils";
 
@@ -82,18 +82,7 @@ export const CycleProvider = ({ children }) => {
   return () => clearInterval(interval);
 }, []);
 
-  // useEffect(() => {
-  //   fetchCycle();
-
-  //   socket.on("getCycle", (MESSAGE) => {
-  //     console.log("SOCKET EVENT getCycle:", MESSAGE);
-  //     fetchCycle();
-  //   });
-
-  //   return () => {
-  //     socket.off("getCycle");
-  //   };
-  // }, []);
+  
 
   return (
     <CycleContext.Provider

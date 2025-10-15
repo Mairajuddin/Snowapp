@@ -28,7 +28,6 @@ import {
 import { FireApi } from "../hooks/useRequest";
 import TimeDisplay from "../Components/TimeDuration";
 import CountdownTimer from "../Components/CountdownTimer";
-import { socket } from "../utils/socket";
 import { useCycle } from "../context/CycleContext";
 
 // const MainPage = ({cycleData,loadingData,tokenAddressData}) => {

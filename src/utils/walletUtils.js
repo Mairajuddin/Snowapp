@@ -75,6 +75,7 @@ const Wallet_address = localStorage.getItem("wallet_address");
 
 export const stakeTokenFunc = async (amount, info) => {
   console.log(amount, "sakjjhdasjkh");
+
   if (!window.ethereum) throw new Error("MetaMask not installed");
 
   const provider = new ethers.BrowserProvider(window.ethereum);
@@ -97,23 +98,41 @@ export const stakeTokenFunc = async (amount, info) => {
   const latestCycleId = Number(cycleId);
 
   // ✅ Chain setup
-  const PARAMS = {
-    chainId: "0x539",
-    chainName: "Public node",
-    rpcUrls: [import.meta.env.VITE_RPC_URL],
-    nativeCurrency: {
-      name: "Ethereum",
-      symbol: "ETH",
-      decimals: 18,
+  const NETWORKS = {
+    DEVNET: {
+      chainId: "0x539",
+      chainName: "Public node",
+      rpcUrls: [import.meta.env.VITE_RPC_URL],
+      nativeCurrency: {
+        name: "Ethereum",
+        symbol: "ETH",
+        decimals: 18,
+      },
     },
+    TESTNET: {
+      chainId: "0xaa36a7",
+      chainName: "Sepolia Test Network",
+      rpcUrls: [import.meta.env.VITE_RPC_URL],
+      nativeCurrency: { name: "SepoliaETH", symbol: "ETH", decimals: 18 },
+      blockExplorerUrls: ["https://sepolia.etherscan.io/"],
+    },
+    MAINNET: {},
   };
+  const paramCheck = import.meta.env.VITE_NETWORK
+  const PARAMS = NETWORKS[paramCheck];
+  console.log(PARAMS, 'sdkhgsd')
+
   // const PARAMS = {
-  //   chainId: "0xaa36a7",
-  //   chainName: "Sepolia Test Network",
+  //   chainId: "0x539",
+  //   chainName: "Public node",
   //   rpcUrls: [import.meta.env.VITE_RPC_URL],
-  //   nativeCurrency: { name: "SepoliaETH", symbol: "ETH", decimals: 18 },
-  //   blockExplorerUrls: ["https://sepolia.etherscan.io"],
+  //   nativeCurrency: {
+  //     name: "Ethereum",
+  //     symbol: "ETH",
+  //     decimals: 18,
+  //   },
   // };
+  console.log(PARAMS.chainId, 'jhasdhaskjhdkjjas')
 
   try {
     await window.ethereum.request({
@@ -265,6 +284,7 @@ export const getUserStakes = async (
 
 export const claimTokens = async (cycleInfo) => {
   try {
+    console.log(cycleInfo,'jhhgasdhjgashgdashg')
     const cycleId = cycleInfo?.cycle;
     const provider = new ethers.BrowserProvider(window.ethereum);
     const signer = await provider.getSigner();
@@ -293,12 +313,13 @@ export const claimTokens = async (cycleInfo) => {
     console.log("Cycle info jhjhhjjjhjhhjhj:", cycleInfo);
 
     const phase = cycleInfo.phase;
-
+    console.log(cycleInfo?.rewardToken, 'ksjadhjsadkjhajkshkdjash')
     if (phase !== "Claiming") {
       throw new Error(`Cycle is currently in phase: ${phase}`);
     }
     if (
       cycleInfo?.rewardToken == "0x0000000000000000000000000000000000000000"
+
     ) {
       throw new Error(` Cycle not finalized`);
     }
@@ -345,6 +366,9 @@ export const getCycleInfo = async () => {
 
     // const phase = await stakingContract._computePhase(latestCycleId);
     // console.log(phase,'check my pase')
+    let Phase = await stakingContract._computePhase(latestCycleId);
+    Phase = Cycle[Number(Phase)];
+    console.log(Phase, 'check my hase here');
     const {
       phase,
       startTimestamp,
@@ -375,6 +399,8 @@ export const getCycleInfo = async () => {
 
     const stakedTokenDecimals = await stakedTokenContract.decimals();
     const totalStakedToken = ethers.formatUnits(totalStaked, stakedTokenDecimals);
+
+
 
     let data = {
       cycle: latestCycleId,
@@ -425,12 +451,13 @@ export const getCycleInfo = async () => {
 
 export const createCycle = async () => {
   try {
-    
+
     if (!window.ethereum) throw new Error("MetaMask not installed");
 
     const provider = new ethers.BrowserProvider(window.ethereum);
     const signer = await provider.getSigner();
     const userAddress = await signer.getAddress();
+    console.log(userAddress, 'aksdkjsdfkjsdhfhksdjfsjdsfkj')
 
     const stakingContract = new ethers.Contract(
       STAKING_ADDRESS,
@@ -449,6 +476,7 @@ export const createCycle = async () => {
 
     // Case 1: No cycle exists
     if (cycleId === 0) {
+      // newCycleId = await createNewCycle(stakingContract,provider, userAddress);
       newCycleId = await createNewCycle(stakingContract, tokenToUse, provider, userAddress);
     }
     // Case 2: Cycle exists
@@ -465,8 +493,9 @@ export const createCycle = async () => {
 
 
       if (cycleEnded) {
-        // newCycleId = await createNewCycle(stakingContract, tokenVersionAddress, provider, userAddress);  need to update it later
+
         newCycleId = await createNewCycle(stakingContract, tokenToUse, provider, userAddress);
+        // newCycleId = await createNewCycle(stakingContract,provider, userAddress);
       } else {
         return {
           success: false,
@@ -498,12 +527,19 @@ const createNewCycle = async (stakingContract, tokenAddr, provider, userAddress)
 
   try {
     console.log("CREATING NEW CYCLE WITH NONCE", nonce);
-    tx = await stakingContract.createCycle(tokenAddr, {
+    // tx = await stakingContract.createCycle(tokenAddr, {
+    //   gasLimit: 1_000_000,
+    // });
+    tx = await stakingContract.createCycle({
       gasLimit: 1_000_000,
     });
   } catch (error) {
     console.log("TRYING TO CREATE CYCLE AGAIN WITH NONCE", nonce + 1);
-    tx = await stakingContract.createCycle(tokenAddr, {
+    // tx = await stakingContract.createCycle(tokenAddr, {
+    //   nonce: nonce + 1,
+    //   gasLimit: 1_000_000,
+    // });
+    tx = await stakingContract.createCycle({
       nonce: nonce + 1,
       gasLimit: 1_000_000,
     });

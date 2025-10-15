@@ -4,6 +4,7 @@ import { AppBar, Toolbar, Typography, Box, Chip, Button, useMediaQuery, useTheme
 import { Wallet } from 'lucide-react';
 import { createCycle, finalizeCycle, updateCycle } from '../utils/walletUtils';
 import { useCycle } from '../context/CycleContext';
+import { toast } from 'react-toastify';
 
 const Header = ({ isWalletConnected, walletAddress, connectWallet, disconnectWallet }) => {
 
@@ -90,11 +91,19 @@ const Header = ({ isWalletConnected, walletAddress, connectWallet, disconnectWal
             Update Phase
           </Button>
           <Button
+            // onClick={async () => {
+            //   const res = await finalizeCycle(cycleData);
+            //   console.log("Finalize result:", res);
+            //   await fetchCycle()
+            //   toast.success(res.message);
+            // }}
             onClick={async () => {
               const res = await finalizeCycle(cycleData);
               console.log("Finalize result:", res);
-              alert(res.message);
+              await fetchCycle();
+              toast.success(res.message);
             }}
+
           >
             Finalize token
           </Button>
